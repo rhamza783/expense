@@ -1,0 +1,1144 @@
+
+<!DOCTYPE html>
+<html lang="ur" dir="ltr" spellcheck="false" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Management System & Daily Ledger</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- JSZip, FileSaver & HTML2Canvas for ZIP Backup & Screenshot Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            /* Light Theme Palette */
+            --bg-body: #f4f7fe;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-grid: #e2e8f0;
+            --border-card: #cbd5e1;
+            --focus-ring: #6366f1;
+            --input-bg: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+            /* Sidebar Light Mode */
+            --sidebar-bg: #ffffff;
+            --sidebar-hover: #f1f5f9;
+            --sidebar-active-bg: #6366f1;
+            --sidebar-text: #64748b;
+            --sidebar-text-active: #ffffff;
+            --sidebar-border: #e2e8f0;
+            --toggle-bg: #f8fafc;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Palette */
+            --bg-body: #11131a;
+            --bg-card: #181a23;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-grid: #2a2d3d;
+            --border-card: #334155;
+            --focus-ring: #6366f1;
+            --input-bg: #1e212b;
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+            /* Sidebar Dark Mode */
+            --sidebar-bg: #1c1e29;
+            --sidebar-hover: #2a2d3d;
+            --sidebar-active-bg: #6366f1;
+            --sidebar-text: #94a3b8;
+            --sidebar-text-active: #ffffff;
+            --sidebar-border: #2a2d3d;
+            --toggle-bg: #2a2d3d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        *::selection, td::selection, th::selection, [contenteditable="true"]::selection, input::selection {
+            background-color: rgba(99, 102, 241, 0.35) !important;
+            color: inherit !important;
+            text-shadow: none;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* ==========================================
+           MODERN UI SIDEBAR
+           ========================================== */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 24px 16px; border-right: 1px solid var(--sidebar-border); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; z-index: 100; flex-shrink: 0; }
+        .sidebar.collapsed { width: 80px; padding: 24px 12px; }
+        .sidebar-top-wrap { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; padding: 0 4px; }
+        .sidebar.collapsed .sidebar-top-wrap { justify-content: center; }
+        .brand-info { display: flex; align-items: center; gap: 12px; overflow: hidden; white-space: nowrap; }
+        .app-logo-icon { width: 32px; height: 32px; background: #3b82f6; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; flex-shrink: 0; }
+        .brand-name { font-weight: 800; font-size: 1.05rem; color: var(--text-main); letter-spacing: 0.3px; }
+        .sidebar.collapsed .brand-name, .sidebar.collapsed .menu-label, .sidebar.collapsed .badge-pill, .sidebar.collapsed .badge-circle { display: none !important; }
+        .toggle-sidebar-btn { background: var(--sidebar-hover); border: none; color: var(--sidebar-text); cursor: pointer; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: all 0.2s ease; }
+        .toggle-sidebar-btn:hover { color: var(--text-main); background: var(--border-grid); }
+        .sidebar.collapsed .toggle-sidebar-btn { display: none; } 
+        .sidebar-menu { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+        .nav-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 10px; color: var(--sidebar-text); text-decoration: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease; position: relative; white-space: nowrap; }
+        .nav-item i { font-size: 1.1rem; width: 20px; text-align: center; flex-shrink: 0; }
+        .nav-item:hover { background-color: var(--sidebar-hover); color: var(--text-main); }
+        .nav-item.active { background-color: var(--sidebar-active-bg); color: #ffffff; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35); }
+        .nav-item.active i { color: #ffffff; }
+        .badge-pill { margin-left: auto; background: #818cf8; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-circle { margin-left: auto; background: #ef4444; color: #ffffff; font-size: 0.7rem; font-weight: 700; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .sidebar-footer { padding-top: 16px; display: flex; justify-content: center; }
+        .theme-toggle-btn { background: var(--toggle-bg); border: 1px solid var(--sidebar-border); width: 100%; padding: 12px 14px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; }
+        .theme-toggle-left { display: flex; align-items: center; gap: 14px; color: var(--sidebar-text); font-weight: 600; font-size: 0.9rem; white-space: nowrap; transition: color 0.2s; }
+        .theme-toggle-left i { font-size: 1.1rem; width: 20px; text-align: center; }
+        .theme-switch { width: 36px; height: 20px; background: #cbd5e1; border-radius: 20px; position: relative; transition: background 0.3s; }
+        .switch-circle { width: 14px; height: 14px; background: #ffffff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        [data-theme="dark"] .theme-switch { background: var(--sidebar-active-bg); }
+        [data-theme="dark"] .switch-circle { transform: translateX(16px); }
+        [data-theme="dark"] .theme-icon-moon { display: block; }
+        [data-theme="dark"] .theme-icon-sun { display: none; }
+        [data-theme="dark"] .theme-toggle-left { color: var(--text-main); }
+        [data-theme="light"] .theme-icon-moon { display: none; }
+        [data-theme="light"] .theme-icon-sun { display: block; }
+        .sidebar.collapsed .theme-toggle-btn { justify-content: center; padding: 12px; }
+        .sidebar.collapsed .theme-switch, .sidebar.collapsed .theme-toggle-text { display: none; }
+        .sidebar.collapsed .theme-toggle-left { gap: 0; }
+        .sidebar.collapsed .nav-item:hover::after, .sidebar.collapsed .theme-toggle-btn:hover::after { content: attr(data-title); position: absolute; left: 70px; background: var(--bg-card); color: var(--text-main); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; box-shadow: var(--shadow-md); z-index: 999; border: 1px solid var(--border-card); }
+
+        /* Main Viewport */
+        .main-viewport { flex: 1; height: 100vh; overflow-y: auto; overflow-x: auto; padding: 24px 30px; display: flex; flex-direction: column; position: relative; }
+        .viewport-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 16px; width: max-content; min-width: 100%; position: sticky; left: 0; z-index: 60; }
+        .view-title-wrap { display: flex; align-items: center; gap: 10px; }
+        .view-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+        .history-controls { display: flex; gap: 8px; }
+        .history-btn { background: var(--bg-card); border: 1.5px solid var(--border-card); padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; box-shadow: var(--shadow-sm); }
+        .history-btn:hover { border-color: var(--focus-ring); color: var(--focus-ring); transform: translateY(-1px); }
+        .app-view { display: none; width: max-content; }
+        .app-view.active-view { display: block; }
+
+        /* KPI BANNER */
+        .kpi-banner { display: flex; gap: 16px; margin-bottom: 24px; width: max-content; min-width: calc(100vw - 320px); position: sticky; left: 0; z-index: 50; }
+        .kpi-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px 20px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; flex: 1; min-width: 220px; }
+        .kpi-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; }
+        .kpi-expense::before { background: #eab308; }
+        .kpi-cash::before { background: #ef4444; }
+        .kpi-sale::before { background: #10b981; }
+        .kpi-diff::before { background: #6366f1; }
+        .kpi-title { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 1.5rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; }
+        .kpi-cash .kpi-value { color: #ef4444; }
+        .kpi-sale .kpi-value { color: #10b981; }
+        .kpi-diff .kpi-value { color: #6366f1; }
+
+        /* EXCEL GRID */
+        .excel-grid { display: flex; flex-direction: row; gap: 16px; align-items: flex-start; width: max-content; }
+        .matched-col { display: flex; flex-direction: column; gap: 16px; }
+        .matched-col > .card { width: 100% !important; margin: 0; }
+        .matched-col > .card > table { width: 100% !important; }
+
+        .card { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-card); box-shadow: var(--shadow-sm); overflow: hidden; width: max-content !important; display: block; margin: 0; padding: 0; }
+        .card:hover { box-shadow: var(--shadow-md); border-color: var(--focus-ring); }
+        table { border-collapse: collapse; background-color: var(--bg-card); width: max-content !important; table-layout: auto !important; margin: 0; padding: 0; }
+        th, td { border: 1px solid var(--border-grid); padding: 6px 12px; white-space: nowrap !important; width: auto !important; min-width: 48px; height: 30px; text-align: center !important; vertical-align: middle; font-variant-numeric: tabular-nums; position: relative; transition: background 0.1s ease, box-shadow 0.1s ease; }
+        .urdu { font-family: 'Noto Nastaliq Urdu', serif !important; direction: rtl; text-align: center !important; font-size: 0.88rem; line-height: 1.6; white-space: nowrap !important; unicode-bidi: isolate; min-width: 70px; }
+        .num { font-weight: 600; text-align: center !important; white-space: nowrap !important; unicode-bidi: embed; min-width: 60px; }
+
+        .att-select { appearance: none; border: none; background-color: transparent; color: var(--text-main); font-family: inherit; font-weight: 800; font-size: 0.78rem; text-align: center; text-align-last: center; cursor: pointer; padding: 2px 6px; border-radius: 4px; width: 100%; outline: none; transition: all 0.2s ease; }
+        .att-select:focus { box-shadow: 0 0 0 2px var(--focus-ring) !important; background: var(--bg-card); }
+        .att-p { color: #16a34a !important; background-color: rgba(34, 197, 94, 0.18); }
+        .att-a { color: #dc2626 !important; background-color: rgba(239, 68, 68, 0.18); }
+        .att-l { color: #d97706 !important; background-color: rgba(245, 158, 11, 0.18); }
+        .att-h { color: #6366f1 !important; background-color: rgba(99, 102, 241, 0.18); }
+        .att-off { color: #64748b !important; background-color: rgba(100, 116, 139, 0.18); }
+
+        [contenteditable="true"] { cursor: text; outline: none !important; user-select: all; }
+        [contenteditable="true"]:hover { background-color: rgba(99, 102, 241, 0.12) !important; box-shadow: inset 0 0 0 1px var(--focus-ring); }
+        [contenteditable="true"]:focus { background-color: var(--bg-card) !important; color: var(--text-main) !important; box-shadow: 0 0 0 2px var(--focus-ring) !important; position: relative; z-index: 20 !important; border-radius: 3px; }
+
+        .total-sale-input { border: none !important; outline: none !important; background-color: transparent !important; width: 100%; font-family: inherit; font-size: inherit; font-weight: inherit; color: inherit; text-align: left !important; padding: 0; margin: 0; appearance: none; }
+        .calc-locked { cursor: not-allowed !important; user-select: none; }
+
+        /* Color classes */
+        .c-green-header   { background: linear-gradient(180deg, #15803d, #166534); color: #ffffff; font-weight: 700; }
+        .c-green-sub      { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; font-weight: 700; }
+        .c-green-light    { background-color: rgba(34, 197, 94, 0.08); }
+        .c-grey-header    { background: linear-gradient(180deg, #334155, #1e293b); color: #f8fafc; font-weight: 700; }
+        .c-grey-sub       { background-color: rgba(148, 163, 184, 0.15); font-weight: 700; }
+        .c-blue-header    { background: linear-gradient(180deg, #4f46e5, #3730a3); color: #ffffff; font-weight: 700; }
+        .c-blue-sub       { background-color: rgba(99, 102, 241, 0.15); color: #818cf8; font-weight: 700; }
+        .c-blue-dark      { background: linear-gradient(180deg, #3730a3, #1e1b4b); color: #ffffff; font-weight: 800; }
+        .c-peach-header   { background: linear-gradient(180deg, #ea580c, #c2410c); color: #ffffff; font-weight: 700; }
+        .c-peach-sub      { background-color: rgba(249, 115, 22, 0.15); color: #fb923c; font-weight: 700; }
+        .c-yellow-header  { background: linear-gradient(180deg, #ca8a04, #a16207); color: #ffffff; font-weight: 800; }
+        .c-cyan-header    { background: linear-gradient(180deg, #0284c7, #0369a1); color: #ffffff; font-weight: 800; }
+
+        .btn-box { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; width: max-content; }
+        .btn-macro { background: var(--bg-card); border: 1px solid #ef4444; color: #ef4444; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 8px; cursor: pointer; text-align: center; box-shadow: var(--shadow-sm); transition: all 0.2s ease; white-space: nowrap; }
+        .btn-macro:hover { background: #ef4444; color: #ffffff; transform: translateY(-1px); }
+        .btn-macro.gray { border-color: var(--border-card); color: var(--text-main); }
+        .btn-macro.gray:hover { background: var(--border-card); color: var(--text-main); }
+
+        /* Chicken System */
+        .chicken-tabs-container { display: flex; gap: 12px; margin-bottom: 24px; position: sticky; left: 0; z-index: 50;}
+        .c-main-tab { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-main); padding: 12px 32px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.2s; font-size: 1rem; box-shadow: var(--shadow-sm); }
+        .c-main-tab.active { background: var(--focus-ring); color: #ffffff; border-color: var(--focus-ring); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+        .c-section { display: none; flex-direction: column; width: max-content; }
+        .c-section.active { display: flex; }
+        .c-sub-tabs-container { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border-grid); padding-bottom: 12px; position: sticky; left: 0; }
+        .c-sub-tab { background: transparent; border: none; color: var(--text-muted); font-weight: 700; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem; }
+        .c-sub-tab:hover { background: var(--sidebar-hover); color: var(--text-main); }
+        .c-sub-tab.active { background: rgba(99, 102, 241, 0.15); color: var(--focus-ring); }
+        .c-sub-view { display: none; flex-direction: column; gap: 16px; width: max-content; }
+        .c-sub-view.active { display: flex; }
+
+        /* Action Buttons Row */
+        .action-row { display: flex; gap: 12px; margin-top: 10px; }
+        
+        .btn-save-history { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: transform 0.2s; width: max-content; }
+        .btn-save-history:hover { transform: translateY(-2px); }
+
+        .btn-save-image { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); transition: transform 0.2s; width: max-content; }
+        .btn-save-image:hover { transform: translateY(-2px); }
+
+        /* Native Date Picker Inputs */
+        .date-input {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 800;
+            outline: none;
+            cursor: pointer;
+            text-align: center;
+        }
+        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        [data-theme="light"] ::-webkit-calendar-picker-indicator { filter: invert(0); }
+
+        .history-table-wrap { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-card); overflow: hidden; box-shadow: var(--shadow-sm); width: max-content; }
+        .history-table th { background: var(--sidebar-bg); color: var(--text-main); font-weight: 800; padding: 12px 16px; border-bottom: 2px solid var(--border-grid); }
+
+        /* Ledger & Settings */
+        .ledger-container { display: flex; flex-direction: column; gap: 16px; width: max-content; min-width: 900px; }
+        .ledger-header-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: var(--bg-card); padding: 16px 20px; border-radius: 12px; border: 1px solid var(--border-card); box-shadow: var(--shadow-sm); }
+        .ledger-search-box { position: relative; display: flex; align-items: center; min-width: 360px; }
+        .ledger-search-box i { position: absolute; left: 16px; color: var(--text-muted); }
+        .ledger-search-input { width: 100%; background: var(--input-bg); border: 1.5px solid var(--border-card); border-radius: 30px; padding: 10px 16px 10px 42px; color: var(--text-main); font-family: inherit; outline: none; }
+        .btn-add-client { background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .ledger-table-wrap { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-card); overflow: hidden; box-shadow: var(--shadow-sm); }
+        .ledger-table { width: 100%; border-collapse: collapse; }
+        .ledger-table th { background: var(--sidebar-bg); color: var(--text-main); font-weight: 800; padding: 12px 16px; border: 1px solid var(--border-card); }
+        .ledger-table td { border: 1px solid var(--border-grid); padding: 10px 12px; color: var(--text-main); text-align: center; }
+        .btn-del-client { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .btn-del-client:hover { background: #ef4444; color: #ffffff; }
+
+        .settings-container { display: flex; flex-direction: column; gap: 20px; width: max-content; min-width: 800px; }
+        .setting-section-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 14px; }
+        .setting-section-title { font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-grid); padding-bottom: 12px; }
+        .setting-action-btn { background: var(--bg-body); border: 1.5px solid var(--border-card); color: var(--text-main); padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; width: max-content; }
+        .setting-action-btn.primary { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .setting-action-btn.danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.4); }
+
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; }
+        .modal-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 24px; width: 440px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 16px; }
+        .modal-title { font-weight: 800; font-size: 1.15rem; display: flex; justify-content: space-between; }
+        .modal-field { display: flex; flex-direction: column; gap: 6px; }
+        .modal-field input { background: var(--input-bg); border: 1.5px solid var(--border-card); border-radius: 8px; padding: 10px 14px; outline: none; }
+        .btn-cancel { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-card); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="app-sidebar">
+        <div>
+            <div class="sidebar-top-wrap">
+                <div class="brand-info">
+                    <div class="app-logo-icon">K</div>
+                    <span class="brand-name">Kretya Ledger</span>
+                </div>
+                <button class="toggle-sidebar-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
+                    <i class="fa-solid fa-chevron-left" id="collapse-icon"></i>
+                </button>
+            </div>
+            <nav class="sidebar-menu">
+                <div class="nav-item active" data-title="Daily Sheet" onclick="switchPage('daily')">
+                    <i class="fa-solid fa-file-invoice-dollar"></i><span class="menu-label">Daily Sheet</span>
+                </div>
+                <div class="nav-item" data-title="Chicken Calculator" onclick="switchPage('chicken')">
+                    <i class="fa-solid fa-drumstick-bite"></i><span class="menu-label">Analytics</span><span class="badge-pill">New</span>
+                </div>
+                <div class="nav-item" data-title="Client Ledger" onclick="switchPage('ledger')">
+                    <i class="fa-regular fa-address-book"></i><span class="menu-label">Client Ledger</span><span class="badge-circle">4</span>
+                </div>
+                <div class="nav-item" data-title="Settings" onclick="switchPage('settings')">
+                    <i class="fa-solid fa-gear"></i><span class="menu-label">Settings</span>
+                </div>
+            </nav>
+        </div>
+        <div class="sidebar-footer">
+            <div class="theme-toggle-btn" onclick="toggleThemeMode()" data-title="Toggle Theme">
+                <div class="theme-toggle-left">
+                    <i class="fa-regular fa-moon theme-icon-moon"></i><i class="fa-regular fa-sun theme-icon-sun"></i><span class="theme-toggle-text">Dark mode</span>
+                </div>
+                <div class="theme-switch"><div class="switch-circle"></div></div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-viewport">
+        <!-- Top Controls Bar -->
+        <div class="viewport-topbar">
+            <div class="view-title-wrap"><h2 class="view-title" id="current-view-title">Daily Income & Expense Sheet</h2></div>
+            <div class="history-controls">
+                <button class="history-btn" onclick="undoState()" title="Undo (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i> Undo</button>
+                <button class="history-btn" onclick="redoState()" title="Redo (Ctrl+Y)"><i class="fa-solid fa-rotate-right"></i> Redo</button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 1: HORIZONTAL DAILY SHEET
+             ========================================== -->
+        <div id="view-daily" class="app-view active-view">
+            <div class="kpi-banner">
+                <div class="kpi-card kpi-expense"><span class="kpi-title">Total Expense</span><span class="kpi-value" id="dash-tot-exp">0 PKR</span></div>
+                <div class="kpi-card kpi-cash"><span class="kpi-title">Total Cash</span><span class="kpi-value" id="dash-cash">0 PKR</span></div>
+                <div class="kpi-card kpi-sale" style="background: rgba(16, 185, 129, 0.05);"><span class="kpi-title">Total Sale (Manual)</span><span class="kpi-value"><input type="text" id="dash-tot-sale" class="total-sale-input sale-input" placeholder="0 PKR"></span></div>
+                <div class="kpi-card kpi-diff"><span class="kpi-title">Difference</span><span class="kpi-value" id="dash-diff">0 PKR</span></div>
+            </div>
+
+            <div class="excel-grid">
+                <!-- COL 1 -->
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-green-header"><th colspan="2" style="padding:10px;" contenteditable="true">Morning Purchase</th></tr>
+                                <tr class="c-green-sub"><th contenteditable="true">Category</th><th contenteditable="true">Amount</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="urdu" contenteditable="true">علی رضا دودھ</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">شاہ دودھ</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">ڈِھلوں دودھ</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">عاصم دودھ</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">استاد شوکت</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">یاسر</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">کیک</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">امین</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">کوئلہ</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">سرف</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">صابن</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">شیمپو</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">پیٹرول</td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true"></td><td class="num currency-cell mp-calc" contenteditable="true"></td></tr>
+                                <tr class="c-peach-sub" style="font-weight:800;"><td contenteditable="true">Expense</td><td class="num calc-locked" id="mp-total" style="font-weight:800;">0 PKR</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <table>
+                            <tbody>
+                                <tr class="c-green-light"><td style="font-weight:700;" contenteditable="true">Recived</td><td class="num calc-locked" id="rec-val" style="font-weight:700;">0 PKR</td></tr>
+                                <tr><td style="font-weight:700;" contenteditable="true">Sale</td><td class="num currency-cell sale-input" id="left-sale" style="font-weight:600;" contenteditable="true"></td></tr>
+                                <tr style="background-color: rgba(239, 68, 68, 0.1);"><td style="font-weight:700; color:#ef4444;" contenteditable="true">Remaing</td><td class="num calc-locked" id="left-rem" style="font-weight:700; color:#ef4444;">0 PKR</td></tr>
+                                <tr class="c-green-light"><td style="font-weight:700;" contenteditable="true">Have</td><td class="num currency-cell" id="left-have" style="font-weight:600;" contenteditable="true"></td></tr>
+                                <tr class="c-green-light"><td style="font-weight:700;" contenteditable="true">Diffrence</td><td class="num calc-locked" id="left-diff" style="font-weight:700;">0 PKR</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- COL 2 -->
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr class="c-grey-header"><th colspan="2" style="padding:10px;" contenteditable="true">Purchase</th></tr>
+                            <tr class="c-grey-sub"><th contenteditable="true">Category</th><th contenteditable="true">Amount</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="urdu" contenteditable="true">شاہ دودھ</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true">اصغر دودھ</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true">کوئلہ</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true">سگریٹ</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true">پیٹرول</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true">آئل</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true">دہی</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true">ڈبے</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true">موٹر سائیکل</td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true"></td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true"></td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true"></td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true"></td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr><td class="urdu" contenteditable="true"></td><td class="num currency-cell p-calc" contenteditable="true"></td></tr>
+                            <tr class="c-grey-header" style="font-weight:800;"><td contenteditable="true">Total</td><td class="num calc-locked" id="p-total" style="font-weight:800;">0 PKR</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- COL 3 -->
+                <div class="matched-col">
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-blue-header"><th colspan="4" style="padding:10px;" contenteditable="true">Suplier</th></tr>
+                                <tr class="c-blue-sub"><th contenteditable="true">Name</th><th contenteditable="true">Total</th><th contenteditable="true">Paid</th><th contenteditable="true">Rem</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr class="sup-row"><td class="urdu" contenteditable="true">حمزہ سبزی</td><td class="num currency-cell sup-total" contenteditable="true"></td><td class="num currency-cell sup-paid" contenteditable="true"></td><td class="num calc-locked sup-rem"></td></tr>
+                                <tr class="sup-row"><td class="urdu" contenteditable="true">رانا چکن</td><td class="num currency-cell sup-total" contenteditable="true"></td><td class="num currency-cell sup-paid" contenteditable="true"></td><td class="num calc-locked sup-rem"></td></tr>
+                                <tr class="sup-row"><td class="urdu" contenteditable="true">عمران چکن</td><td class="num currency-cell sup-total" contenteditable="true"></td><td class="num currency-cell sup-paid" contenteditable="true"></td><td class="num calc-locked sup-rem"></td></tr>
+                                <tr class="sup-row"><td class="urdu" contenteditable="true">سفیان بیف</td><td class="num currency-cell sup-total" contenteditable="true"></td><td class="num currency-cell sup-paid" contenteditable="true"></td><td class="num calc-locked sup-rem"></td></tr>
+                                <tr class="sup-row"><td class="urdu" contenteditable="true">شاہد مٹن</td><td class="num currency-cell sup-total" contenteditable="true"></td><td class="num currency-cell sup-paid" contenteditable="true"></td><td class="num calc-locked sup-rem"></td></tr>
+                                <tr class="sup-row"><td class="urdu" contenteditable="true">سبحان کیک</td><td class="num currency-cell sup-total" contenteditable="true"></td><td class="num currency-cell sup-paid" contenteditable="true"></td><td class="num calc-locked sup-rem"></td></tr>
+                                <tr class="c-blue-header" style="font-weight:800;"><td style="color:#f87171;" contenteditable="true">TOTAL</td><td class="num calc-locked" id="sup-grand-total"></td><td class="num calc-locked" id="sup-grand-paid" style="color:#f87171;">0 PKR</td><td class="num calc-locked" id="sup-grand-rem"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-blue-header"><th colspan="4" style="padding:10px;" contenteditable="true">Easypaisas + Jazz Cash</th></tr>
+                                <tr class="c-grey-sub"><th contenteditable="true">Name</th><th contenteditable="true">Amount</th><th contenteditable="true">Name</th><th contenteditable="true">Amount</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td style="font-size:0.75rem; font-weight:700; color:#38bdf8;" contenteditable="true">Jazz Cash</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td style="font-size:0.75rem; font-weight:700; color:#38bdf8;" contenteditable="true">Easypaisa</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 2</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 2</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 3</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 3</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 4</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 4</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 5</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 5</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 6</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 6</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 7</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 7</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 8</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 8</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 9</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 9</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 10</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 10</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr><td contenteditable="true">JC 11</td><td class="num currency-cell ep-calc" contenteditable="true"></td><td contenteditable="true">EP 11</td><td class="num currency-cell ep-calc" contenteditable="true"></td></tr>
+                                <tr class="c-blue-header" style="font-weight:800;"><td colspan="2" style="font-size:1.05rem;" contenteditable="true">Total</td><td colspan="2" class="num calc-locked" id="ep-grand-total" style="font-size:0.95rem;">0 PKR</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- COL 4 -->
+                <div class="matched-col">
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-peach-header"><th colspan="6" style="padding:10px;" contenteditable="true">Wage & Attendance</th></tr>
+                                <tr class="c-peach-sub"><th contenteditable="true">Name</th><th contenteditable="true">Att</th><th contenteditable="true">Amount</th><th contenteditable="true">Name</th><th contenteditable="true">Att</th><th contenteditable="true">Amount</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="urdu" contenteditable="true">امین</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td><td class="urdu" contenteditable="true">عرفان</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">محسن</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td><td class="urdu" contenteditable="true">سیف</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">شبیر</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td><td class="urdu" contenteditable="true">بلال</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">صابر</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td><td class="urdu" contenteditable="true">چاند</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">ضیافت</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td><td class="urdu" contenteditable="true">ادریس</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">شہروز</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td><td class="urdu" contenteditable="true">کبیر</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">شوکت</td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td><td class="urdu" contenteditable="true"></td><td><select class="att-select" onchange="updateSelectBadge(this)"><option value="">-</option><option value="P">P</option><option value="A">A</option><option value="L">L</option><option value="H">H</option><option value="Off">Off</option></select></td><td class="num currency-cell wage-calc" contenteditable="true"></td></tr>
+                                <tr class="c-peach-header" style="font-weight:800;"><td colspan="2" contenteditable="true">TOTAL</td><td class="num calc-locked" id="wage-total" colspan="4">0 PKR</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-blue-header"><th colspan="4" style="font-size:1.05rem; padding:10px;" contenteditable="true">Udhaar</th></tr>
+                                <tr class="c-blue-sub"><th contenteditable="true">Name</th><th contenteditable="true">Address</th><th contenteditable="true">Amount</th><th contenteditable="true">Phone No.</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="urdu" contenteditable="true"></td><td contenteditable="true"></td><td class="num currency-cell ud-calc" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true"></td><td contenteditable="true"></td><td class="num currency-cell ud-calc" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true"></td><td contenteditable="true"></td><td class="num currency-cell ud-calc" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true"></td><td contenteditable="true"></td><td class="num currency-cell ud-calc" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true"></td><td contenteditable="true"></td><td class="num currency-cell ud-calc" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true"></td><td contenteditable="true"></td><td class="num currency-cell ud-calc" contenteditable="true"></td><td contenteditable="true"></td></tr>
+                                <tr class="c-blue-header" style="font-weight:800;"><td contenteditable="true">TOTAL</td><td contenteditable="true"></td><td class="num calc-locked" id="ud-total">0 PKR</td><td contenteditable="true"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- COL 5 -->
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-green-header"><th style="padding:10px 12px;" contenteditable="true">ITEM</th><th style="padding:10px 12px;" contenteditable="true">HALF</th><th style="padding:10px 12px;" contenteditable="true">KUCHA</th><th style="padding:10px 12px;" contenteditable="true">NEW KUCHA</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="urdu" contenteditable="true">بیف</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">وائٹ بیف</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">مکھن</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">چکن</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">وائٹ چکن</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">تکہ</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">ملائی بوٹی</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">کباب</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">لیگ پیس</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td style="font-weight:700;" contenteditable="true">oil</td><td class="num" contenteditable="true"></td><td style="font-size:0.75rem; color:var(--text-muted);" contenteditable="true">Ghee</td><td class="num" contenteditable="true"></td></tr>
+                                <tr><td style="font-weight:700;" contenteditable="true">koila</td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td><td class="num" contenteditable="true"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-green-sub"><th contenteditable="true">Name</th><th contenteditable="true">5000/1000/500</th><th contenteditable="true">100/50</th><th contenteditable="true">10/20</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr class="chachu-row"><td class="urdu" contenteditable="true">چاچوایوب بقایا</td><td class="num currency-cell chachu-val" contenteditable="true"></td><td class="num currency-cell chachu-val" contenteditable="true"></td><td class="num currency-cell chachu-val" contenteditable="true"></td></tr>
+                                <tr class="hasnain-row"><td class="urdu" contenteditable="true">حسنین بقایا</td><td class="num currency-cell hasnain-val" contenteditable="true"></td><td class="num currency-cell hasnain-val" contenteditable="true"></td><td class="num currency-cell hasnain-val" contenteditable="true"></td></tr>
+                                <tr class="c-green-light"><td class="urdu" contenteditable="true">صبح شروع</td><td class="num currency-cell" contenteditable="true"></td><td class="num currency-cell" contenteditable="true"></td><td class="num currency-cell" contenteditable="true"></td></tr>
+                                <tr class="c-green-light naqdi-row"><td class="urdu" contenteditable="true">نقدی کی گنتی</td><td class="num currency-cell naqdi-val" contenteditable="true"></td><td class="num currency-cell naqdi-val" contenteditable="true"></td><td class="num currency-cell naqdi-val" contenteditable="true"></td></tr>
+                                <tr class="c-green-light"><td class="urdu" contenteditable="true">کل کے پیسے</td><td class="num currency-cell" contenteditable="true"></td><td class="num currency-cell" contenteditable="true"></td><td class="num currency-cell" contenteditable="true"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="btn-box">
+                        <button class="btn-macro" contenteditable="true"><i class="fa-solid fa-plus-circle"></i> CreateTodaySheet</button>
+                        <button class="btn-macro" contenteditable="true"><i class="fa-solid fa-arrow-up-right-from-square"></i> JUMP TO THE TEMPLATE SHEET</button>
+                    </div>
+                </div>
+
+                <!-- COL 6 -->
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-yellow-header">
+                                    <th colspan="2" style="font-size:1.2rem; font-weight:800; padding:10px;" contenteditable="true">
+                                        <i class="fa-regular fa-calendar-check" style="font-size:1.1rem; margin-right:6px;"></i>27 August 2026
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="urdu" contenteditable="true">گھر</td><td class="num currency-cell de-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">گھر سامان</td><td class="num currency-cell de-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">آٹا</td><td class="num currency-cell de-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">گیس</td><td class="num currency-cell de-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">لکڑی کے</td><td class="num currency-cell de-calc" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">لڑکوں کے</td><td class="num currency-cell de-calc" contenteditable="true"></td></tr>
+                                <tr class="c-blue-dark"><td contenteditable="true">SUB TOTAL</td><td class="num calc-locked" id="de-subtotal" style="color:#fca5a5; font-weight:800;">0 PKR</td></tr>
+                                <tr><td class="urdu" contenteditable="true">چائے</td><td class="num currency-cell de-deduct" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">کالی مرچ</td><td class="num currency-cell de-deduct" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">زیرہ</td><td class="num currency-cell de-deduct" contenteditable="true"></td></tr>
+                                <tr style="background: linear-gradient(135deg, #38bdf8, #0284c7); color:#ffffff; font-weight:800;"><td contenteditable="true">TOTAL</td><td class="num calc-locked" id="de-final-total">0 PKR</td></tr>
+                                <tr style="background: linear-gradient(135deg, #4ade80, #16a34a); color:#ffffff; font-weight:800;"><td style="color:#0f172a;" contenteditable="true">RECEIVE 1</td><td class="num currency-cell" id="de-rec1" style="color:#991b1b; font-weight:800;" contenteditable="true"></td></tr>
+                                <tr style="background: linear-gradient(135deg, #4ade80, #16a34a); color:#ffffff; font-weight:800;"><td style="color:#0f172a;" contenteditable="true">RECEIVE 2</td><td class="num currency-cell" id="de-rec2" style="color:#991b1b; font-weight:800;" contenteditable="true"></td></tr>
+                                <tr style="background: linear-gradient(135deg, #ef4444, #dc2626); color:#fef08a; font-weight:800;"><td style="color:#fef08a;" contenteditable="true">REMAINING</td><td class="num calc-locked" id="de-rem" style="font-weight:800;">0 PKR</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <table style="background: rgba(16, 185, 129, 0.1);">
+                            <tbody>
+                                <tr><td class="urdu" style="color:#10b981;" contenteditable="true">آٹا آیا</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" style="color:#10b981;" contenteditable="true">آٹا استعمال</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" style="color:#10b981;" contenteditable="true">آٹا بقایا</td><td class="num qty-cell" style="font-weight:700; color:#10b981;" contenteditable="true"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- COL 7: SABZI -->
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr class="c-cyan-header"><th colspan="6" class="urdu" style="font-size:1.15rem; padding:10px 0;" contenteditable="true">سبزی کی ڈیمانڈ</th></tr>
+                                <tr>
+                                    <th colspan="2" class="c-yellow-header urdu" contenteditable="true">سبزی</th><th colspan="2" class="c-green-sub urdu" contenteditable="true">سلاد</th><th colspan="2" class="c-peach-header urdu" contenteditable="true">مصالحہ جات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="urdu" contenteditable="true">پھول گوبھی</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">بند گوبھی (سبز)</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">پیاز</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">آلو</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">بند گوبھی (لال)</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">ٹماٹر</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">گاجر (سبزی)</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">کھیرا</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">سبز مرچ</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">لہسن</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">گاجر (سلاد)</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">ادرک</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">شملہ مرچ</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">چقندر</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">سبز دھنیا</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">شلجم</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">مولی</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">ہری پیاز</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                                <tr><td class="urdu" contenteditable="true">پالک</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">پودینہ</td><td class="num qty-cell" contenteditable="true"></td><td class="urdu" contenteditable="true">لیموں</td><td class="num qty-cell" contenteditable="true"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             VIEW 2: CHICKEN CALCULATOR (TABBED WITH HISTORY)
+             ============================================== -->
+        <div id="view-chicken" class="app-view">
+            
+            <div class="chicken-tabs-container">
+                <button class="c-main-tab active" onclick="switchChickenTab('rana')"><i class="fa-solid fa-drumstick-bite" style="color:#3b82f6; margin-right:8px;"></i> Rana Chicken</button>
+                <button class="c-main-tab" onclick="switchChickenTab('imran')"><i class="fa-solid fa-drumstick-bite" style="color:#10b981; margin-right:8px;"></i> Imran Chicken</button>
+            </div>
+
+            <!-- ================= RANA SECTION ================= -->
+            <div id="section-rana" class="c-section active">
+                <div class="c-sub-tabs-container">
+                    <button class="c-sub-tab active" onclick="switchSubTab('rana', 'calc')"><i class="fa-solid fa-calculator" style="margin-right:6px;"></i> Today's Calculator</button>
+                    <button class="c-sub-tab" onclick="switchSubTab('rana', 'history')"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i> History Data</button>
+                </div>
+                
+                <!-- Rana Calculator -->
+                <div id="rana-calc-view" class="c-sub-view active">
+                    <div class="card" id="card-rana-chicken">
+                        <table>
+                            <thead>
+                                <tr class="c-blue-header"><th colspan="4" style="font-size:1.05rem; padding:10px;" contenteditable="true"><i class="fa-solid fa-drumstick-bite"></i> Rana Chicken</th></tr>
+                                <tr class="c-grey-sub">
+                                    <th class="urdu">تاریخ</th>
+                                    <!-- NATIVE DATE PICKER -->
+                                    <th class="editable-date" title="Click to edit date">
+                                        <input type="date" id="rana-date" class="date-input" onchange="loadHistoryData('rana')">
+                                    </th>
+                                    <th class="urdu" contenteditable="true">منڈی</th>
+                                    <th class="num" id="rana-mandi" style="color:#3b82f6; font-size:1.1rem; font-weight:800;" contenteditable="true">315</th>
+                                </tr>
+                                <tr class="c-grey-sub"><th class="urdu" contenteditable="true">چیز کا نام</th><th class="urdu" contenteditable="true">ریٹ</th><th class="urdu" contenteditable="true">وزن</th><th class="urdu" contenteditable="true">کل</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr class="rana-item-row" id="rana-row-safi"><td class="urdu" contenteditable="true">چکن صافی</td><td class="num calc-locked rana-rate">536.5</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">23.0</td><td class="num calc-locked rana-item-total" style="font-weight:700;">12,340</td></tr>
+                                <tr class="rana-item-row" id="rana-row-boneless"><td class="urdu" contenteditable="true">بون لیس</td><td class="num calc-locked rana-rate">598.5</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">4</td><td class="num calc-locked rana-item-total" style="font-weight:700;">2,394</td></tr>
+                                <tr class="rana-item-row" id="rana-row-malai"><td class="urdu" contenteditable="true">ملائی بوٹی</td><td class="num calc-locked rana-rate">693</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">5</td><td class="num calc-locked rana-item-total" style="font-weight:700;">3,465</td></tr>
+                                
+                                <tr style="background: rgba(239, 68, 68, 0.05);"><td colspan="2" class="urdu" style="color:#ef4444; font-weight:800;" contenteditable="true">آج کا کل بل</td><td colspan="2" class="num calc-locked" id="rana-today-bill" style="color:#ef4444; font-weight:800;">18,199</td></tr>
+                                <tr style="background: rgba(100, 116, 139, 0.05);"><td colspan="2" class="urdu" style="color:var(--text-muted); font-weight:700;" contenteditable="true">کل کا بقایا</td><td colspan="2" class="num" id="rana-yesterday-rem" style="color:var(--text-main); font-weight:700;" contenteditable="true">86,605</td></tr>
+                                <tr style="background: rgba(99, 102, 241, 0.08);"><td colspan="2" class="urdu" style="color:#6366f1; font-weight:800;" contenteditable="true">کل</td><td colspan="2" class="num calc-locked" id="rana-grand-total" style="color:#6366f1; font-weight:800;">104,804</td></tr>
+                                <tr style="background: rgba(16, 185, 129, 0.08);"><td colspan="2" class="urdu" style="color:#10b981; font-weight:800;" contenteditable="true">وصول</td><td colspan="2" class="num" id="rana-paid" style="color:#10b981; font-weight:800;" contenteditable="true">18,500</td></tr>
+                                <tr style="background: rgba(239, 68, 68, 0.1);"><td colspan="2" class="urdu" style="color:#ef4444; font-weight:800;" contenteditable="true">بقایا بچا</td><td colspan="2" class="num calc-locked" id="rana-balance-rem" style="color:#ef4444; font-weight:800;">86,304</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="action-row">
+                        <button class="btn-save-history" onclick="transferToHistory('rana')"><i class="fa-solid fa-file-export"></i> Save to History</button>
+                        <button class="btn-save-image" onclick="downloadChickenImage('rana')"><i class="fa-solid fa-camera"></i> Save Image</button>
+                    </div>
+                </div>
+
+                <!-- Rana History -->
+                <div id="rana-history-view" class="c-sub-view">
+                    <div class="history-table-wrap">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date (تاریخ)</th><th>Mandi (منڈی)</th><th>Safi (صافی)</th><th>Boneless (بون لیس)</th><th>Malai (ملائی)</th><th>Bill (آج کا بل)</th><th>Prev Bal (کل بقایا)</th><th>Total (کل)</th><th>Paid (وصول)</th><th>Rem (بقایا)</th><th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rana-history-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= IMRAN SECTION ================= -->
+            <div id="section-imran" class="c-section">
+                <div class="c-sub-tabs-container">
+                    <button class="c-sub-tab active" onclick="switchSubTab('imran', 'calc')"><i class="fa-solid fa-calculator" style="margin-right:6px;"></i> Today's Calculator</button>
+                    <button class="c-sub-tab" onclick="switchSubTab('imran', 'history')"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i> History Data</button>
+                </div>
+                
+                <!-- Imran Calculator -->
+                <div id="imran-calc-view" class="c-sub-view active">
+                    <div class="card" id="card-imran-chicken">
+                        <table>
+                            <thead>
+                                <tr class="c-blue-header"><th colspan="4" style="font-size:1.05rem; padding:10px; background:linear-gradient(180deg, #10b981, #059669);" contenteditable="true"><i class="fa-solid fa-drumstick-bite"></i> Imran Chicken</th></tr>
+                                <tr class="c-grey-sub">
+                                    <th class="urdu">تاریخ</th>
+                                    <!-- NATIVE DATE PICKER -->
+                                    <th class="editable-date" title="Click to edit date">
+                                        <input type="date" id="imran-date" class="date-input" onchange="loadHistoryData('imran')">
+                                    </th>
+                                    <th class="urdu" contenteditable="true">منڈی</th>
+                                    <th class="num" id="imran-mandi" style="color:#10b981; font-size:1.1rem; font-weight:800;" contenteditable="true">315</th>
+                                </tr>
+                                <tr class="c-grey-sub"><th class="urdu" contenteditable="true">چیز کا نام</th><th class="urdu" contenteditable="true">ریٹ</th><th class="urdu" contenteditable="true">وزن</th><th class="urdu" contenteditable="true">کل</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr class="imran-item-row" id="imran-row-safi"><td class="urdu" contenteditable="true">چکن صافی</td><td class="num calc-locked imran-rate">536.5</td><td class="num imran-weight" style="color:#10b981; font-weight:800; background: rgba(16, 185, 129, 0.05);" contenteditable="true"></td><td class="num calc-locked imran-item-total" style="font-weight:700;">0</td></tr>
+                                <tr class="imran-item-row" id="imran-row-boneless"><td class="urdu" contenteditable="true">بون لیس</td><td class="num calc-locked imran-rate">598.5</td><td class="num imran-weight" style="color:#10b981; font-weight:800; background: rgba(16, 185, 129, 0.05);" contenteditable="true"></td><td class="num calc-locked imran-item-total" style="font-weight:700;">0</td></tr>
+                                <tr class="imran-item-row" id="imran-row-malai"><td class="urdu" contenteditable="true">ملائی بوٹی</td><td class="num calc-locked imran-rate">708.75</td><td class="num imran-weight" style="color:#10b981; font-weight:800; background: rgba(16, 185, 129, 0.05);" contenteditable="true"></td><td class="num calc-locked imran-item-total" style="font-weight:700;">0</td></tr>
+                                
+                                <tr style="background: rgba(239, 68, 68, 0.05);"><td colspan="2" class="urdu" style="color:#ef4444; font-weight:800;" contenteditable="true">آج کا کل بل</td><td colspan="2" class="num calc-locked" id="imran-today-bill" style="color:#ef4444; font-weight:800;">0</td></tr>
+                                <tr style="background: rgba(100, 116, 139, 0.05);"><td colspan="2" class="urdu" style="color:var(--text-muted); font-weight:700;" contenteditable="true">کل کا بقایا</td><td colspan="2" class="num" id="imran-yesterday-rem" style="color:var(--text-main); font-weight:700;" contenteditable="true">0</td></tr>
+                                <tr style="background: rgba(16, 185, 129, 0.08);"><td colspan="2" class="urdu" style="color:#10b981; font-weight:800;" contenteditable="true">کل</td><td colspan="2" class="num calc-locked" id="imran-grand-total" style="color:#10b981; font-weight:800;">0</td></tr>
+                                <tr style="background: rgba(16, 185, 129, 0.08);"><td colspan="2" class="urdu" style="color:#10b981; font-weight:800;" contenteditable="true">وصول</td><td colspan="2" class="num" id="imran-paid" style="color:#10b981; font-weight:800;" contenteditable="true">0</td></tr>
+                                <tr style="background: rgba(239, 68, 68, 0.1);"><td colspan="2" class="urdu" style="color:#ef4444; font-weight:800;" contenteditable="true">بقایا بچا</td><td colspan="2" class="num calc-locked" id="imran-balance-rem" style="color:#ef4444; font-weight:800;">0</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="action-row">
+                        <button class="btn-save-history" onclick="transferToHistory('imran')" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fa-solid fa-file-export"></i> Save to History</button>
+                        <button class="btn-save-image" onclick="downloadChickenImage('imran')"><i class="fa-solid fa-camera"></i> Save Image</button>
+                    </div>
+                </div>
+
+                <!-- Imran History -->
+                <div id="imran-history-view" class="c-sub-view">
+                    <div class="history-table-wrap">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date (تاریخ)</th><th>Mandi (منڈی)</th><th>Safi (صافی)</th><th>Boneless (بون لیس)</th><th>Malai (ملائی)</th><th>Bill (آج کا بل)</th><th>Prev Bal (کل بقایا)</th><th>Total (کل)</th><th>Paid (وصول)</th><th>Rem (بقایا)</th><th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="imran-history-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==============================================
+             VIEW 3: CLIENT LEDGER
+             ============================================== -->
+        <div id="view-ledger" class="app-view">
+            <div class="ledger-container" id="ledger-capture-target">
+                <div class="ledger-header-bar">
+                    <div class="ledger-search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="ledger-search" class="ledger-search-input" placeholder="Search client by Name, Phone..." oninput="filterClientLedger()">
+                    </div>
+                    <button class="btn-add-client" onclick="openClientModal()"><i class="fa-solid fa-user-plus"></i> نیا کلائنٹ شامل کریں</button>
+                </div>
+                <div class="ledger-table-wrap">
+                    <table class="ledger-table" id="client-ledger-table">
+                        <thead>
+                            <tr>
+                                <th style="width:60px;">#</th><th class="urdu">نام کلائنٹ (Name)</th><th>فون نمبر (Phone)</th><th class="urdu">پتہ (Address)</th><th>کل ادھار (Udhaar)</th><th>وصول (Paid)</th><th>باقی بیلنس (Balance)</th><th style="width:90px;">ایکشن</th>
+                            </tr>
+                        </thead>
+                        <tbody id="client-ledger-tbody">
+                            <tr class="client-row">
+                                <td class="num">1</td><td class="urdu" contenteditable="true">علی رضا برادرز</td><td class="num" contenteditable="true">0300-1234567</td><td class="urdu" contenteditable="true">مین بازار، گلی نمبر 4</td><td class="num currency-cell c-udhaar" contenteditable="true">25,000 PKR</td><td class="num currency-cell c-paid" contenteditable="true">15,000 PKR</td><td class="num calc-locked c-bal" style="font-weight:800; color:#ef4444;">10,000 PKR</td><td><button class="btn-del-client" onclick="deleteClientRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             VIEW 4: SETTINGS
+             ============================================== -->
+        <div id="view-settings" class="app-view">
+            <div class="settings-container">
+                <!-- FORMULAS -->
+                <div class="setting-section-card">
+                    <div class="setting-section-title"><i class="fa-solid fa-drumstick-bite" style="color:#6366f1;"></i> Chicken Formulas Management</div>
+                    <div class="urdu" style="font-size:0.9rem; color:var(--text-muted);">چکن کے تمام فارمولے ریٹ کا حساب لگانے کے لیے استعمال ہوتے ہیں۔</div>
+                    <div id="formula-editor-body" style="display:none; margin-top:8px;">
+                        <div style="display:flex; gap:28px; font-size:0.85rem;" class="urdu">
+                            <div><strong style="color:#6366f1;">رانا چکن کے ریٹ فارمولے:</strong><br>صافی: <code>((x + <input id="rana-f-safi-add" style="width:40px; text-align:center;" value="16">) * <input id="rana-f-safi-mul" style="width:40px; text-align:center;" value="1.5">) + <input id="rana-f-safi-off" style="width:40px; text-align:center;" value="40"></code><br>بون لیس: <code>x * <input id="rana-f-bone-mul" style="width:40px; text-align:center;" value="1.9"></code><br>ملائی بوٹی: <code>x * <input id="rana-f-malai-mul" style="width:40px; text-align:center;" value="2.2"></code></div>
+                            <div><strong style="color:#10b981;">عمران چکن کے ریٹ فارمولے:</strong><br>صافی: <code>((x + <input id="imran-f-safi-add" style="width:40px; text-align:center;" value="16">) * <input id="imran-f-safi-mul" style="width:40px; text-align:center;" value="1.5">) + <input id="imran-f-safi-off" style="width:40px; text-align:center;" value="40"></code><br>بون لیس: <code>x * <input id="imran-f-bone-mul" style="width:40px; text-align:center;" value="1.9"></code><br>ملائی بوٹی: <code>x * <input id="imran-f-malai-mul" style="width:40px; text-align:center;" value="2.25"></code></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px;"><button class="setting-action-btn primary" id="btn-toggle-formula-edit" onclick="toggleFormulaEditor()"><i class="fa-solid fa-pen-to-square"></i> Edit Formulas</button><button class="setting-action-btn" onclick="resetChickenFormulas()"><i class="fa-solid fa-rotate-left"></i> Reset</button></div>
+                </div>
+
+                <!-- BACKUP -->
+                <div class="setting-section-card">
+                    <div class="setting-section-title"><i class="fa-solid fa-file-zipper" style="color:#10b981;"></i> Backup & Data Export</div>
+                    <div class="urdu" style="font-size:0.9rem; color:var(--text-muted);">مکمل سسٹم کا ZIP بیک اپ ڈاؤن لوڈ کریں۔ (JSON + Screenshots)</div>
+                    <div><button class="setting-action-btn primary" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="generateZipBackup()"><i class="fa-solid fa-download"></i> Download ZIP Backup</button></div>
+                </div>
+
+                <!-- RESET -->
+                <div class="setting-section-card">
+                    <div class="setting-section-title"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Reset System Data</div>
+                    <div><button class="setting-action-btn danger" onclick="resetEntireSystem()"><i class="fa-solid fa-triangle-exclamation"></i> Factory Reset</button></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: ADD CLIENT -->
+    <div class="modal-backdrop" id="client-modal">
+        <div class="modal-card">
+            <div class="modal-title"><span><i class="fa-solid fa-user-plus" style="color:#10b981; margin-right:6px;"></i> نیا کلائنٹ کھاتہ</span><i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeClientModal()"></i></div>
+            <div class="modal-field"><label>Client Name</label><input type="text" id="m-client-name" class="urdu" placeholder="مثلاً: ملک عابد فوڈز"></div>
+            <div class="modal-field"><label>Phone Number</label><input type="text" id="m-client-phone" placeholder="0300-0000000"></div>
+            <div class="modal-field"><label>Address / Location</label><input type="text" id="m-client-address" class="urdu" placeholder="مارکیٹ یا پتہ"></div>
+            <div class="modal-field"><label>Opening Udhaar</label><input type="number" id="m-client-udhaar" placeholder="0"></div>
+            <div class="modal-actions"><button class="btn-cancel" onclick="closeClientModal()">Cancel</button><button class="btn-add-client" onclick="submitNewClient()">Save Client</button></div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT SYSTEM ENGINE -->
+    <script>
+        // Set Default Date on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
+            document.getElementById('rana-date').value = localISOTime;
+            document.getElementById('imran-date').value = localISOTime;
+        });
+
+        function parseNum(val) { if (!val) return 0; const cleaned = val.toString().replace(/[^0-9.-]+/g, ""); const num = parseFloat(cleaned); return isNaN(num) ? 0 : num; }
+        function formatSmartNum(num) { if (isNaN(num)) return "0"; if (num % 1 !== 0) { return num.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }); } return num.toLocaleString('en-US'); }
+        function selectAllContent(el) { setTimeout(() => { if (el.tagName === 'INPUT') { el.select(); } else { const range = document.createRange(); range.selectNodeContents(el); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); } }, 10); }
+        
+        function toggleSidebar() { 
+            const sidebar = document.getElementById('app-sidebar');
+            const icon = document.getElementById('collapse-icon');
+            sidebar.classList.toggle('collapsed'); 
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-left');
+            }
+        }
+        
+        function toggleThemeMode() { const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark'; const nextTheme = currentTheme === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', nextTheme); }
+
+        function switchPage(page) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+            document.querySelectorAll('.sidebar-menu .nav-item').forEach(i => i.classList.remove('active'));
+            const title = document.getElementById('current-view-title');
+            if (page === 'daily') { document.getElementById('view-daily').classList.add('active-view'); document.querySelector('[data-title="Daily Sheet"]').classList.add('active'); title.innerText = 'Daily Income & Expense Sheet'; }
+            else if (page === 'chicken') { document.getElementById('view-chicken').classList.add('active-view'); document.querySelector('[data-title="Chicken Calculator"]').classList.add('active'); title.innerText = 'Chicken Rate Analytics'; recalculateChicken(); }
+            else if (page === 'ledger') { document.getElementById('view-ledger').classList.add('active-view'); document.querySelector('[data-title="Client Ledger"]').classList.add('active'); title.innerText = 'Client Ledger & Customer Directory'; recalculateClientLedger(); }
+            else if (page === 'settings') { document.getElementById('view-settings').classList.add('active-view'); document.querySelector('[data-title="Settings"]').classList.add('active'); title.innerText = 'System Settings & Data Management'; }
+        }
+
+        // Tabbing System for Chicken Page
+        function switchChickenTab(supplier) {
+            document.querySelectorAll('.c-main-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.c-section').forEach(s => s.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(`section-${supplier}`).classList.add('active');
+        }
+
+        function switchSubTab(supplier, viewType) {
+            const section = document.getElementById(`section-${supplier}`);
+            section.querySelectorAll('.c-sub-tab').forEach(b => b.classList.remove('active'));
+            section.querySelectorAll('.c-sub-view').forEach(v => v.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(`${supplier}-${viewType}-view`).classList.add('active');
+        }
+
+        // Add to History with Detailed Columns & Date Replacement Logic
+        function transferToHistory(supplier) {
+            const dateInput = document.getElementById(`${supplier}-date`);
+            const dateVal = dateInput.value;
+            
+            if (!dateVal) {
+                alert('Please pick a valid date first.');
+                dateInput.focus();
+                return;
+            }
+
+            const mandiVal = document.getElementById(`${supplier}-mandi`).innerText;
+            
+            // Weights and Amounts
+            const wSafi = document.querySelector(`#${supplier}-row-safi .${supplier}-weight`).innerText;
+            const tSafi = document.querySelector(`#${supplier}-row-safi .${supplier}-item-total`).innerText;
+            
+            const wBone = document.querySelector(`#${supplier}-row-boneless .${supplier}-weight`).innerText;
+            const tBone = document.querySelector(`#${supplier}-row-boneless .${supplier}-item-total`).innerText;
+            
+            const wMalai = document.querySelector(`#${supplier}-row-malai .${supplier}-weight`).innerText;
+            const tMalai = document.querySelector(`#${supplier}-row-malai .${supplier}-item-total`).innerText;
+
+            const billVal = document.getElementById(`${supplier}-today-bill`).innerText;
+            const yestRemVal = document.getElementById(`${supplier}-yesterday-rem`).innerText;
+            const totalVal = document.getElementById(`${supplier}-grand-total`).innerText;
+            const paidVal = document.getElementById(`${supplier}-paid`).innerText;
+            const balVal = document.getElementById(`${supplier}-balance-rem`).innerText;
+
+            const tbody = document.getElementById(`${supplier}-history-tbody`);
+            
+            // Check for existing duplicate date
+            let existingRow = tbody.querySelector(`tr[data-date="${dateVal}"]`);
+
+            const rowHTML = `
+                <td class="num">${dateVal}</td>
+                <td class="num" contenteditable="true">${mandiVal}</td>
+                <td class="num" data-w="${wSafi}" contenteditable="true">${wSafi} kg / ${tSafi}</td>
+                <td class="num" data-w="${wBone}" contenteditable="true">${wBone} kg / ${tBone}</td>
+                <td class="num" data-w="${wMalai}" contenteditable="true">${wMalai} kg / ${tMalai}</td>
+                <td class="num" contenteditable="true">${billVal}</td>
+                <td class="num" contenteditable="true">${yestRemVal}</td>
+                <td class="num" contenteditable="true">${totalVal}</td>
+                <td class="num" data-p="${paidVal}" contenteditable="true" style="color:#10b981; font-weight:bold;">${paidVal}</td>
+                <td class="num" contenteditable="true" style="color:#ef4444; font-weight:bold;">${balVal}</td>
+                <td><button class="btn-del-client" onclick="this.closest('tr').remove(); saveState();"><i class="fa-solid fa-trash"></i></button></td>
+            `;
+
+            if (existingRow) {
+                const wantsToReplace = confirm(`An entry for the date "${dateVal}" already exists.\n\nDo you want to REPLACE the old data with the current calculations?`);
+                if (wantsToReplace) {
+                    existingRow.innerHTML = rowHTML;
+                    document.getElementById(`${supplier}-yesterday-rem`).innerText = balVal;
+                    recalculateChicken();
+                    saveState();
+                }
+                return;
+            }
+
+            // No duplicate, create new row
+            const tr = document.createElement('tr');
+            tr.setAttribute('data-date', dateVal);
+            tr.innerHTML = rowHTML;
+            tbody.appendChild(tr);
+
+            // Auto-forward balance to next day
+            document.getElementById(`${supplier}-yesterday-rem`).innerText = balVal;
+            
+            recalculateChicken();
+            saveState();
+            alert(`Data for ${dateVal} saved securely!`);
+        }
+
+        function loadHistoryData(supplier) {
+            const dateVal = document.getElementById(`${supplier}-date`).value;
+            if(!dateVal) return;
+            
+            const tbody = document.getElementById(`${supplier}-history-tbody`);
+            const row = tbody.querySelector(`tr[data-date="${dateVal}"]`);
+            
+            if(row) {
+                document.getElementById(`${supplier}-mandi`).innerText = row.cells[1].innerText;
+                document.querySelector(`#${supplier}-row-safi .${supplier}-weight`).innerText = row.cells[2].getAttribute('data-w');
+                document.querySelector(`#${supplier}-row-boneless .${supplier}-weight`).innerText = row.cells[3].getAttribute('data-w');
+                document.querySelector(`#${supplier}-row-malai .${supplier}-weight`).innerText = row.cells[4].getAttribute('data-w');
+                document.getElementById(`${supplier}-yesterday-rem`).innerText = row.cells[6].innerText;
+                document.getElementById(`${supplier}-paid`).innerText = row.cells[8].getAttribute('data-p');
+                
+                recalculateChicken();
+                saveState();
+            }
+        }
+
+        async function downloadChickenImage(supplier) {
+            const el = document.getElementById(`card-${supplier}-chicken`);
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+            
+            try {
+                window.getSelection().removeAllRanges(); // Clear text selection
+                const canvas = await html2canvas(el, { 
+                    scale: 2, 
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-body') 
+                });
+                const dateVal = document.getElementById(`${supplier}-date`).value;
+                const link = document.createElement('a');
+                link.download = `${supplier}_chicken_${dateVal}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch(e) {
+                alert("Error saving image.");
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        function toggleFormulaEditor() {
+            const body = document.getElementById('formula-editor-body');
+            const btn = document.getElementById('btn-toggle-formula-edit');
+            if (body.style.display === 'none') { body.style.display = 'block'; btn.innerHTML = '<i class="fa-solid fa-check"></i> Done Editing'; }
+            else { body.style.display = 'none'; btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Formulas'; recalculateChicken(); saveState(); }
+        }
+
+        async function generateZipBackup() {
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating ZIP...';
+            btn.disabled = true;
+            try {
+                const zip = new JSZip();
+                const jsonFolder = zip.folder("json");
+                const imagesFolder = zip.folder("images");
+                const backupPayload = { version: "2.0", timestamp: new Date().toISOString(), dailySheetState: captureCurrentSnapshot() };
+                jsonFolder.file("backup_data.json", JSON.stringify(backupPayload, null, 2));
+
+                const activeViewBefore = document.querySelector('.app-view.active-view').id;
+                document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+                
+                document.getElementById('view-daily').classList.add('active-view');
+                const canvasDaily = await html2canvas(document.getElementById('view-daily'), { scale: 1.5 });
+                imagesFolder.file("daily_sheet.png", canvasDaily.toDataURL("image/png").split(',')[1], { base64: true });
+
+                document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+                document.getElementById(activeViewBefore).classList.add('active-view');
+
+                const content = await zip.generateAsync({ type: "blob" });
+                saveAs(content, `Business_Backup_${new Date().toISOString().slice(0, 10)}.zip`);
+                alert('ZIP Backup downloaded successfully!');
+            } catch (err) { alert('Backup error: ' + err.message); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+        }
+
+        function resetEntireSystem() { if (confirm('Reset all sheets, transactions, and ledger?')) { localStorage.clear(); location.reload(); } }
+        function openClientModal() { document.getElementById('client-modal').style.display = 'flex'; document.getElementById('m-client-name').focus(); }
+        function closeClientModal() { document.getElementById('client-modal').style.display = 'none'; }
+        
+        function submitNewClient() {
+            const name = document.getElementById('m-client-name').value.trim() || 'نیا کلائنٹ';
+            const phone = document.getElementById('m-client-phone').value.trim() || '0300-0000000';
+            const address = document.getElementById('m-client-address').value.trim() || '-';
+            const udhaar = parseNum(document.getElementById('m-client-udhaar').value);
+            const tbody = document.getElementById('client-ledger-tbody');
+            const newIndex = tbody.querySelectorAll('.client-row').length + 1;
+            const tr = document.createElement('tr');
+            tr.className = 'client-row';
+            tr.innerHTML = `<td class="num">${newIndex}</td><td class="urdu" contenteditable="true">${name}</td><td class="num" contenteditable="true">${phone}</td><td class="urdu" contenteditable="true">${address}</td><td class="num currency-cell c-udhaar" contenteditable="true">${formatSmartNum(udhaar)} PKR</td><td class="num currency-cell c-paid" contenteditable="true">0 PKR</td><td class="num calc-locked c-bal" style="font-weight:800; color:#ef4444;">${formatSmartNum(udhaar)} PKR</td><td><button class="btn-del-client" onclick="deleteClientRow(this)"><i class="fa-solid fa-trash"></i></button></td>`;
+            tbody.appendChild(tr); attachCellEvents(tr); recalculateClientLedger(); closeClientModal(); saveState();
+        }
+
+        function deleteClientRow(btn) { if (confirm('Delete this client?')) { btn.closest('.client-row').remove(); recalculateClientLedger(); saveState(); } }
+        function filterClientLedger() { const query = document.getElementById('ledger-search').value.toLowerCase().trim(); document.querySelectorAll('#client-ledger-tbody .client-row').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none'; }); }
+        function recalculateClientLedger() { document.querySelectorAll('#client-ledger-tbody .client-row').forEach(row => { const udhaar = parseNum(row.querySelector('.c-udhaar').innerText); const paid = parseNum(row.querySelector('.c-paid').innerText); const bal = udhaar - paid; const balCell = row.querySelector('.c-bal'); balCell.innerText = formatSmartNum(bal) + ' PKR'; balCell.style.color = bal > 0 ? '#ef4444' : '#10b981'; }); }
+        function updateSelectBadge(select) { select.classList.remove('att-p', 'att-a', 'att-l', 'att-h', 'att-off'); const val = select.value; if (val === 'P') select.classList.add('att-p'); else if (val === 'A') select.classList.add('att-a'); else if (val === 'L') select.classList.add('att-l'); else if (val === 'H') select.classList.add('att-h'); else if (val === 'Off') select.classList.add('att-off'); saveState(); }
+
+        const undoStack = []; const redoStack = []; let isPerformingHistoryAction = false;
+        function captureCurrentSnapshot() { const editables = Array.from(document.querySelectorAll('[contenteditable="true"]')).map(el => el.innerText); const inputs = Array.from(document.querySelectorAll('input:not(#ledger-search)')).map(el => el.value); const selects = Array.from(document.querySelectorAll('select')).map(el => el.value); return JSON.stringify({ editables, inputs, selects }); }
+        function restoreSnapshot(snapshotStr) { if (!snapshotStr) return; isPerformingHistoryAction = true; const data = JSON.parse(snapshotStr); const editables = document.querySelectorAll('[contenteditable="true"]'); data.editables.forEach((val, i) => { if (editables[i]) editables[i].innerText = val; }); const inputs = document.querySelectorAll('input:not(#ledger-search)'); data.inputs.forEach((val, i) => { if (inputs[i]) inputs[i].value = val; }); const selects = document.querySelectorAll('select'); data.selects.forEach((val, i) => { if (selects[i]) { selects[i].value = val; updateSelectBadge(selects[i]); } }); recalculateAll(); recalculateChicken(); recalculateClientLedger(); isPerformingHistoryAction = false; }
+        function saveState() { if (isPerformingHistoryAction) return; const currentSnap = captureCurrentSnapshot(); if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== currentSnap) { undoStack.push(currentSnap); if (undoStack.length > 50) undoStack.shift(); redoStack.length = 0; } }
+        function undoState() { if (undoStack.length > 1) { const currentState = undoStack.pop(); redoStack.push(currentState); restoreSnapshot(undoStack[undoStack.length - 1]); } }
+        function redoState() { if (redoStack.length > 0) { const nextState = redoStack.pop(); undoStack.push(nextState); restoreSnapshot(nextState); } }
+        document.addEventListener('keydown', function(e) { if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redoState() : undoState(); } else if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); redoState(); } });
+
+        function recalculateChicken() {
+            const rMandi = parseNum(document.getElementById('rana-mandi').innerText);
+            const rRateSafi = ((rMandi + parseNum(document.getElementById('rana-f-safi-add').value)) * parseNum(document.getElementById('rana-f-safi-mul').value)) + parseNum(document.getElementById('rana-f-safi-off').value);
+            const rRateBone = rMandi * parseNum(document.getElementById('rana-f-bone-mul').value);
+            const rRateMalai = rMandi * parseNum(document.getElementById('rana-f-malai-mul').value);
+            document.querySelector('#rana-row-safi .rana-rate').innerText = formatSmartNum(rRateSafi);
+            document.querySelector('#rana-row-boneless .rana-rate').innerText = formatSmartNum(rRateBone);
+            document.querySelector('#rana-row-malai .rana-rate').innerText = formatSmartNum(rRateMalai);
+            const rTotSafi = Math.round(rRateSafi * parseNum(document.querySelector('#rana-row-safi .rana-weight').innerText));
+            const rTotBone = Math.round(rRateBone * parseNum(document.querySelector('#rana-row-boneless .rana-weight').innerText));
+            const rTotMalai = Math.round(rRateMalai * parseNum(document.querySelector('#rana-row-malai .rana-weight').innerText));
+            document.querySelector('#rana-row-safi .rana-item-total').innerText = formatSmartNum(rTotSafi);
+            document.querySelector('#rana-row-boneless .rana-item-total').innerText = formatSmartNum(rTotBone);
+            document.querySelector('#rana-row-malai .rana-item-total').innerText = formatSmartNum(rTotMalai);
+            const rTodayBill = rTotSafi + rTotBone + rTotMalai;
+            document.getElementById('rana-today-bill').innerText = formatSmartNum(rTodayBill);
+            const rGrandTot = rTodayBill + parseNum(document.getElementById('rana-yesterday-rem').innerText);
+            document.getElementById('rana-grand-total').innerText = formatSmartNum(rGrandTot);
+            document.getElementById('rana-balance-rem').innerText = formatSmartNum(rGrandTot - parseNum(document.getElementById('rana-paid').innerText));
+
+            const iMandi = parseNum(document.getElementById('imran-mandi').innerText);
+            const iRateSafi = ((iMandi + parseNum(document.getElementById('imran-f-safi-add').value)) * parseNum(document.getElementById('imran-f-safi-mul').value)) + parseNum(document.getElementById('imran-f-safi-off').value);
+            const iRateBone = iMandi * parseNum(document.getElementById('imran-f-bone-mul').value);
+            const iRateMalai = iMandi * parseNum(document.getElementById('imran-f-malai-mul').value);
+            document.querySelector('#imran-row-safi .imran-rate').innerText = formatSmartNum(iRateSafi);
+            document.querySelector('#imran-row-boneless .imran-rate').innerText = formatSmartNum(iRateBone);
+            document.querySelector('#imran-row-malai .imran-rate').innerText = formatSmartNum(iRateMalai);
+            const iTotSafi = Math.round(iRateSafi * parseNum(document.querySelector('#imran-row-safi .imran-weight').innerText));
+            const iTotBone = Math.round(iRateBone * parseNum(document.querySelector('#imran-row-boneless .imran-weight').innerText));
+            const iTotMalai = Math.round(iRateMalai * parseNum(document.querySelector('#imran-row-malai .imran-weight').innerText));
+            document.querySelector('#imran-row-safi .imran-item-total').innerText = formatSmartNum(iTotSafi);
+            document.querySelector('#imran-row-boneless .imran-item-total').innerText = formatSmartNum(iTotBone);
+            document.querySelector('#imran-row-malai .imran-item-total').innerText = formatSmartNum(iTotMalai);
+            const iTodayBill = iTotSafi + iTotBone + iTotMalai;
+            document.getElementById('imran-today-bill').innerText = formatSmartNum(iTodayBill);
+            const iGrandTot = iTodayBill + parseNum(document.getElementById('imran-yesterday-rem').innerText);
+            document.getElementById('imran-grand-total').innerText = formatSmartNum(iGrandTot);
+            document.getElementById('imran-balance-rem').innerText = formatSmartNum(iGrandTot - parseNum(document.getElementById('imran-paid').innerText));
+        }
+
+        function resetChickenFormulas() {
+            document.getElementById('rana-f-safi-add').value = "16"; document.getElementById('rana-f-safi-mul').value = "1.5"; document.getElementById('rana-f-safi-off').value = "40"; document.getElementById('rana-f-bone-mul').value = "1.9"; document.getElementById('rana-f-malai-mul').value = "2.2";
+            document.getElementById('imran-f-safi-add').value = "16"; document.getElementById('imran-f-safi-mul').value = "1.5"; document.getElementById('imran-f-safi-off').value = "40"; document.getElementById('imran-f-bone-mul').value = "1.9"; document.getElementById('imran-f-malai-mul').value = "2.25";
+            recalculateChicken(); saveState();
+        }
+
+        function attachCellEvents(context) {
+            context.querySelectorAll('[contenteditable="true"]').forEach(cell => {
+                cell.addEventListener('focus', function() { selectAllContent(this); });
+                cell.addEventListener('mouseup', function(e) { if (document.activeElement === this && window.getSelection().toString() === '') { selectAllContent(this); } });
+                if (cell.classList.contains('currency-cell')) {
+                    cell.addEventListener('focus', function() { const text = this.innerText.trim(); if (text !== '') { const raw = parseNum(text); this.innerText = raw === 0 && text.includes('0') ? '0' : raw.toString(); } selectAllContent(this); });
+                    cell.addEventListener('blur', function() { const text = this.innerText.trim(); this.innerText = text === '' ? '' : formatSmartNum(parseNum(text)) + ' PKR'; recalculateAll(); recalculateClientLedger(); saveState(); });
+                    cell.addEventListener('input', function() { recalculateAll(); recalculateClientLedger(); });
+                }
+                if (cell.classList.contains('qty-cell')) {
+                    cell.addEventListener('focus', function() { const text = this.innerText.trim(); if (text !== '') { this.innerText = parseNum(text).toString(); } selectAllContent(this); });
+                    cell.addEventListener('blur', function() { const text = this.innerText.trim(); this.innerText = text === '' ? '' : parseNum(text) + ' kg'; saveState(); });
+                }
+            });
+        }
+
+        attachCellEvents(document);
+        document.querySelectorAll('#rana-mandi, #imran-mandi, .rana-weight, .imran-weight, #rana-yesterday-rem, #imran-yesterday-rem, #rana-paid, #imran-paid').forEach(cell => { cell.addEventListener('input', recalculateChicken); cell.addEventListener('blur', saveState); });
+        document.querySelectorAll('.formula-input-pill, #rana-f-safi-add, #rana-f-safi-mul, #rana-f-safi-off, #rana-f-bone-mul, #rana-f-malai-mul, #imran-f-safi-add, #imran-f-safi-mul, #imran-f-safi-off, #imran-f-bone-mul, #imran-f-malai-mul').forEach(input => { input.addEventListener('input', recalculateChicken); input.addEventListener('blur', saveState); });
+
+        document.querySelectorAll('.total-sale-input, input.sale-input').forEach(input => {
+            input.addEventListener('focus', function() { const raw = parseNum(this.value); if (raw === 0 && this.value.trim() === '') this.value = ''; else if (raw !== 0) this.value = raw.toString(); selectAllContent(this); });
+            input.addEventListener('blur', function() { const raw = parseNum(this.value); if (this.value.trim() !== '') this.value = formatSmartNum(raw) + ' PKR'; const otherSaleInput = document.querySelector(this.id === 'dash-tot-sale' ? '#side-tot-sale' : '#dash-tot-sale'); if (otherSaleInput && this.value.trim() !== '') otherSaleInput.value = this.value; recalculateAll(); saveState(); });
+            input.addEventListener('input', function() { const otherSaleInput = document.querySelector(this.id === 'dash-tot-sale' ? '#side-tot-sale' : '#dash-tot-sale'); if (otherSaleInput) otherSaleInput.value = this.value; recalculateAll(); });
+        });
+
+        function recalculateAll() {
+          let mpSum = 0; document.querySelectorAll('.mp-calc').forEach(c => mpSum += parseNum(c.innerText)); document.getElementById('mp-total').innerText = formatSmartNum(mpSum) + ' PKR';
+            let pSum = 0; document.querySelectorAll('.p-calc').forEach(c => pSum += parseNum(c.innerText)); document.getElementById('p-total').innerText = formatSmartNum(pSum) + ' PKR';
+            
+            let supPaidSum = 0;
+            document.querySelectorAll('.sup-row').forEach(row => {
+                const totText = row.querySelector('.sup-total').innerText.trim(); const t = parseNum(totText); const p = parseNum(row.querySelector('.sup-paid').innerText);
+                if (totText === '') row.querySelector('.sup-rem').innerText = ''; else { row.querySelector('.sup-rem').innerText = formatSmartNum(t - p) + ' PKR'; supPaidSum += p; }
+            });
+            document.getElementById('sup-grand-paid').innerText = formatSmartNum(supPaidSum) + ' PKR';
+
+            let wageSum = 0; document.querySelectorAll('.wage-calc').forEach(c => wageSum += parseNum(c.innerText)); document.getElementById('wage-total').innerText = formatSmartNum(wageSum) + ' PKR';
+            let epSum = 0; document.querySelectorAll('.ep-calc').forEach(c => epSum += parseNum(c.innerText)); document.getElementById('ep-grand-total').innerText = formatSmartNum(epSum) + ' PKR';
+            let udSum = 0; document.querySelectorAll('.ud-calc').forEach(c => udSum += parseNum(c.innerText)); document.getElementById('ud-total').innerText = formatSmartNum(udSum) + ' PKR';
+
+            let chachuSum = 0; document.querySelectorAll('.chachu-val').forEach(c => chachuSum += parseNum(c.innerText)); document.getElementById('rec-val').innerText = formatSmartNum(chachuSum) + ' PKR';
+            let hasnainSum = 0; document.querySelectorAll('.hasnain-val').forEach(c => hasnainSum += parseNum(c.innerText));
+            let cashSum = 0; document.querySelectorAll('.naqdi-val').forEach(c => cashSum += parseNum(c.innerText)); 
+            
+            document.getElementById('dash-cash').innerText = formatSmartNum(cashSum) + ' PKR';
+
+            const leftRem = (parseNum(document.getElementById('left-sale').innerText) + chachuSum) - mpSum; document.getElementById('left-rem').innerText = formatSmartNum(leftRem) + ' PKR';
+            const leftDiff = parseNum(document.getElementById('left-have').innerText) - leftRem; document.getElementById('left-diff').innerText = formatSmartNum(leftDiff) + ' PKR';
+
+            let deSubTotal = 0; document.querySelectorAll('.de-calc').forEach(c => deSubTotal += parseNum(c.innerText)); document.getElementById('de-subtotal').innerText = formatSmartNum(deSubTotal) + ' PKR';
+            let deductSum = 0; document.querySelectorAll('.de-deduct').forEach(c => deductSum += parseNum(c.innerText));
+            const deFinalTotal = deSubTotal - deductSum; document.getElementById('de-final-total').innerText = formatSmartNum(deFinalTotal) + ' PKR';
+            const rec1 = parseNum(document.getElementById('de-rec1').innerText); const rec2 = parseNum(document.getElementById('de-rec2').innerText);
+            document.getElementById('de-rem').innerText = formatSmartNum(deFinalTotal - rec1 - rec2) + ' PKR';
+
+            const grandTotalExpense = mpSum + pSum + supPaidSum + wageSum + epSum + udSum + (deductSum + rec1 + rec2) + chachuSum + hasnainSum;
+            document.getElementById('dash-tot-exp').innerText = formatSmartNum(grandTotalExpense) + ' PKR';
+
+            const manualSale = parseNum(document.getElementById('dash-tot-sale').value);
+            const grandDiff = (grandTotalExpense + cashSum + leftDiff) - manualSale - chachuSum;
+            document.getElementById('dash-diff').innerText = formatSmartNum(grandDiff) + ' PKR';
+        }
+
+        recalculateAll(); recalculateChicken(); recalculateClientLedger(); saveState();
+    </script>
+</body>
+</html>
