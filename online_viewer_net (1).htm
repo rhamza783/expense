@@ -597,11 +597,11 @@
 
             <!-- ================= RANA SECTION ================= -->
             <div id="section-rana" class="c-section active">
-                <div class="c-sub-tabs-container">
+                <div class="c-sub-tabs-container" id="rana-top-tabs" style="display:none;">
                     <button class="c-sub-tab active" onclick="switchSubTab('rana', 'calc')"><i class="fa-solid fa-calculator" style="margin-right:6px;"></i> Today's Calculator</button>
                     <button class="c-sub-tab" onclick="switchSubTab('rana', 'history')"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i> History Data</button>
                 </div>
-                
+
                 <!-- Rana Calculator -->
                 <div id="rana-calc-view" class="c-sub-view active">
                     <div style="display:flex; align-items:flex-end; gap:12px;">
@@ -633,9 +633,15 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="action-row" style="flex-direction:column; margin-top:0;">
-                        <button class="btn-save-history" onclick="transferToHistory('rana')"><i class="fa-solid fa-file-export"></i> Save to History</button>
-                        <button class="btn-save-image" onclick="downloadChickenImage('rana')"><i class="fa-solid fa-camera"></i> Save Image</button>
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-top:0;">
+                        <div class="c-sub-tabs-container" id="rana-side-tabs" style="flex-direction:column; margin-bottom:0;">
+                            <button class="c-sub-tab active" onclick="switchSubTab('rana', 'calc')"><i class="fa-solid fa-calculator" style="margin-right:6px;"></i> Today's Calculator</button>
+                            <button class="c-sub-tab" onclick="switchSubTab('rana', 'history')"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i> History Data</button>
+                        </div>
+                        <div class="action-row" style="flex-direction:column; margin-top:0;">
+                            <button class="btn-save-history" onclick="transferToHistory('rana')"><i class="fa-solid fa-file-export"></i> Save to History</button>
+                            <button class="btn-save-image" onclick="downloadChickenImage('rana')"><i class="fa-solid fa-camera"></i> Save Image</button>
+                        </div>
                     </div>
                     </div>
                 </div>
@@ -844,6 +850,14 @@
             section.querySelectorAll('.c-sub-view').forEach(v => v.classList.remove('active'));
             event.currentTarget.classList.add('active');
             document.getElementById(`${supplier}-${viewType}-view`).classList.add('active');
+            const topTabs = document.getElementById(`${supplier}-top-tabs`);
+            const sideTabs = document.getElementById(`${supplier}-side-tabs`);
+            if (topTabs && sideTabs) {
+                topTabs.style.display = viewType === 'calc' ? 'none' : 'flex';
+                sideTabs.style.display = viewType === 'calc' ? 'flex' : 'none';
+                topTabs.querySelectorAll('.c-sub-tab').forEach((b, i) => b.classList.toggle('active', (viewType === 'calc') === (i === 0)));
+                sideTabs.querySelectorAll('.c-sub-tab').forEach((b, i) => b.classList.toggle('active', (viewType === 'calc') === (i === 0)));
+            }
         }
 
         // Add to History with Detailed Columns & Date Replacement Logic
