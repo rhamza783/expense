@@ -244,7 +244,7 @@
         [data-theme="light"] ::-webkit-calendar-picker-indicator { filter: invert(0); }
 
         .history-table-wrap { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-card); overflow: hidden; box-shadow: var(--shadow-sm); width: max-content; }
-        .history-table th { background: var(--sidebar-bg); color: var(--text-main); font-weight: 800; padding: 12px 16px; border-bottom: 2px solid var(--border-grid); }
+        .history-table th { background: var(--sidebar-bg); color: var(--text-main); font-weight: 800; padding: 12px 16px; border-bottom: 2px solid var(--border-grid); font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; }
 
         /* Ledger & Settings */
         .ledger-container { display: flex; flex-direction: column; gap: 16px; width: max-content; min-width: 900px; }
@@ -866,6 +866,48 @@
             section.querySelectorAll('.c-sub-view').forEach(v => v.classList.remove('active'));
             event.currentTarget.classList.add('active');
             document.getElementById(`${supplier}-${viewType}-view`).classList.add('active');
+            const topTabs = document.getElementById(`${supplier}-top-tabs`);
+            const sideTabs = document.getElementById(`${supplier}-side-tabs`);
+            if (topTabs && sideTabs) {
+                topTabs.style.display = viewType === 'calc' ? 'none' : 'flex';
+                sideTabs.style.display = viewType === 'calc' ? 'flex' : 'none';
+                topTabs.querySelectorAll('.c-sub-tab').forEach((b, i) => b.classList.toggle('active', (viewType === 'calc') === (i === 0)));
+                sideTabs.querySelectorAll('.c-sub-tab').forEach((b, i) => b.classList.toggle('active', (viewType === 'calc') === (i === 0)));
+            }
+        }
+
+        // Arrow key navigation between editable table cells
+        document.addEventListener('keydown', (e) => {
+            const arrows = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+            if (!(e.key in arrows)) return;
+            const cell = e.target.closest('td, th');
+            if (!cell || !cell.isContentEditable) return;
+            if (!cell.closest('table')) return;
+            const [dRow, dCol] = arrows[e.key];
+            const table = cell.closest('table');
+            const rows = Array.from(table.rows);
+            let r = cell.parentElement.rowIndex, c = cell.cellIndex;
+            // move to next editable cell in the given direction
+            while (true) {
+                if (dRow !== 0) r += dRow; else c += dCol;
+                if (r < 0 || r >= rows.length) return;
+                const rowCells = rows[r].cells;
+                if (c < 0 || c >= rowCells.length) return;
+                const target = rowCells[c];
+                if (target.isContentEditable && !target.classList.contains('calc-locked') && !target.querySelector('input, select')) {
+                    e.preventDefault();
+                    target.focus();
+                    const range = document.createRange();
+                    range.selectNodeContents(target);
+                    range.collapse(false);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    return;
+                }
+                if (dRow === 0) return; // don't skip non-editable cells horizontally
+            }
+        });
             const topTabs = document.getElementById(`${supplier}-top-tabs`);
             const sideTabs = document.getElementById(`${supplier}-side-tabs`);
             if (topTabs && sideTabs) {
