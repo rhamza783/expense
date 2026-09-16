@@ -604,6 +604,7 @@
                 
                 <!-- Rana Calculator -->
                 <div id="rana-calc-view" class="c-sub-view active">
+                    <div style="display:flex; align-items:flex-end; gap:12px;">
                     <div class="card" id="card-rana-chicken">
                         <table>
                             <thead>
@@ -632,9 +633,10 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="action-row">
+                    <div class="action-row" style="flex-direction:column; margin-top:0;">
                         <button class="btn-save-history" onclick="transferToHistory('rana')"><i class="fa-solid fa-file-export"></i> Save to History</button>
                         <button class="btn-save-image" onclick="downloadChickenImage('rana')"><i class="fa-solid fa-camera"></i> Save Image</button>
+                    </div>
                     </div>
                 </div>
 
