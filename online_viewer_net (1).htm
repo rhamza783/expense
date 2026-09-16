@@ -214,6 +214,8 @@
         .side-tabs .c-sub-tab:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(71, 85, 105, 0.4); }
         .side-tabs .c-sub-tab.active { background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
         .side-tabs .c-sub-tab.active:hover { box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
+        .side-tabs-green .c-sub-tab.active { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .side-tabs-green .c-sub-tab.active:hover { box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4); }
         .c-sub-view { display: none; flex-direction: column; gap: 16px; width: max-content; }
         .c-sub-view.active { display: flex; }
 
@@ -658,7 +660,7 @@
                         <table class="history-table">
                             <thead>
                                 <tr>
-                                    <th>Date (تاریخ)</th><th>Mandi (منڈی)</th><th>Safi (صافی)</th><th>Boneless (بون لیس)</th><th>Malai (ملائی)</th><th>Bill (آج کا بل)</th><th>Prev Bal (کل بقایا)</th><th>Total (کل)</th><th>Paid (وصول)</th><th>Rem (بقایا)</th><th>Action</th>
+                                    <th>تاریخ</th><th>منڈی</th><th>صافی</th><th>بون لیس</th><th>ملائی</th><th>آج کا بل</th><th>کل بقایا</th><th>کل</th><th>وصول</th><th>بقایا</th><th>عمل</th>
                                 </tr>
                             </thead>
                             <tbody id="rana-history-tbody"></tbody>
@@ -669,13 +671,14 @@
 
             <!-- ================= IMRAN SECTION ================= -->
             <div id="section-imran" class="c-section">
-                <div class="c-sub-tabs-container">
+                <div class="c-sub-tabs-container" id="imran-top-tabs" style="display:none;">
                     <button class="c-sub-tab active" onclick="switchSubTab('imran', 'calc')"><i class="fa-solid fa-calculator" style="margin-right:6px;"></i> Today's Calculator</button>
                     <button class="c-sub-tab" onclick="switchSubTab('imran', 'history')"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i> History Data</button>
                 </div>
-                
+
                 <!-- Imran Calculator -->
                 <div id="imran-calc-view" class="c-sub-view active">
+                    <div style="display:flex; align-items:center; gap:12px;">
                     <div class="card" id="card-imran-chicken">
                         <table>
                             <thead>
@@ -687,7 +690,7 @@
                                         <input type="date" id="imran-date" class="date-input" onchange="loadHistoryData('imran')">
                                     </th>
                                     <th class="urdu" contenteditable="true">منڈی</th>
-                                    <th class="num" id="imran-mandi" style="color:#10b981; font-size:1.1rem; font-weight:800;" contenteditable="true">315</th>
+                                    <th class="num" id="imran-mandi" style="color:#10b981; font-size:1.1rem; font-weight:800;" contenteditable="true">0</th>
                                 </tr>
                                 <tr class="c-grey-sub"><th class="urdu" contenteditable="true">چیز کا نام</th><th class="urdu" contenteditable="true">ریٹ</th><th class="urdu" contenteditable="true">وزن</th><th class="urdu" contenteditable="true">کل</th></tr>
                             </thead>
@@ -704,9 +707,16 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="action-row">
-                        <button class="btn-save-history" onclick="transferToHistory('imran')" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fa-solid fa-file-export"></i> Save to History</button>
-                        <button class="btn-save-image" onclick="downloadChickenImage('imran')"><i class="fa-solid fa-camera"></i> Save Image</button>
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-top:0;">
+                        <div class="c-sub-tabs-container side-tabs side-tabs-green" id="imran-side-tabs" style="flex-direction:column; margin-bottom:0; border-bottom:none; padding-bottom:0; gap:10px;">
+                            <button class="c-sub-tab active" onclick="switchSubTab('imran', 'calc')"><i class="fa-solid fa-calculator" style="margin-right:6px;"></i> Today's Calculator</button>
+                            <button class="c-sub-tab" onclick="switchSubTab('imran', 'history')"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i> History Data</button>
+                        </div>
+                        <div class="action-row" style="flex-direction:column; margin-top:0;">
+                            <button class="btn-save-history" onclick="transferToHistory('imran')" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fa-solid fa-file-export"></i> Save to History</button>
+                            <button class="btn-save-image" onclick="downloadChickenImage('imran')"><i class="fa-solid fa-camera"></i> Save Image</button>
+                        </div>
+                    </div>
                     </div>
                 </div>
 
@@ -716,7 +726,7 @@
                         <table class="history-table">
                             <thead>
                                 <tr>
-                                    <th>Date (تاریخ)</th><th>Mandi (منڈی)</th><th>Safi (صافی)</th><th>Boneless (بون لیس)</th><th>Malai (ملائی)</th><th>Bill (آج کا بل)</th><th>Prev Bal (کل بقایا)</th><th>Total (کل)</th><th>Paid (وصول)</th><th>Rem (بقایا)</th><th>Action</th>
+                                    <th>تاریخ</th><th>منڈی</th><th>صافی</th><th>بون لیس</th><th>ملائی</th><th>آج کا بل</th><th>کل بقایا</th><th>کل</th><th>وصول</th><th>بقایا</th><th>عمل</th>
                                 </tr>
                             </thead>
                             <tbody id="imran-history-tbody"></tbody>
