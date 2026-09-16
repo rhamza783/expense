@@ -208,6 +208,12 @@
         .c-sub-tab { background: transparent; border: none; color: var(--text-muted); font-weight: 700; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem; }
         .c-sub-tab:hover { background: var(--sidebar-hover); color: var(--text-main); }
         .c-sub-tab.active { background: rgba(99, 102, 241, 0.15); color: var(--focus-ring); }
+
+        /* Side tab buttons styled like action buttons */
+        .side-tabs .c-sub-tab { background: linear-gradient(135deg, #64748b, #475569); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3); transition: transform 0.2s, box-shadow 0.2s; width: max-content; font-size: 0.9rem; white-space: nowrap; }
+        .side-tabs .c-sub-tab:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(71, 85, 105, 0.4); }
+        .side-tabs .c-sub-tab.active { background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .side-tabs .c-sub-tab.active:hover { box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
         .c-sub-view { display: none; flex-direction: column; gap: 16px; width: max-content; }
         .c-sub-view.active { display: flex; }
 
@@ -604,7 +610,7 @@
 
                 <!-- Rana Calculator -->
                 <div id="rana-calc-view" class="c-sub-view active">
-                    <div style="display:flex; align-items:flex-end; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
                     <div class="card" id="card-rana-chicken">
                         <table>
                             <thead>
@@ -616,25 +622,25 @@
                                         <input type="date" id="rana-date" class="date-input" onchange="loadHistoryData('rana')">
                                     </th>
                                     <th class="urdu" contenteditable="true">منڈی</th>
-                                    <th class="num" id="rana-mandi" style="color:#3b82f6; font-size:1.1rem; font-weight:800;" contenteditable="true">315</th>
+                                    <th class="num" id="rana-mandi" style="color:#3b82f6; font-size:1.1rem; font-weight:800;" contenteditable="true">0</th>
                                 </tr>
                                 <tr class="c-grey-sub"><th class="urdu" contenteditable="true">چیز کا نام</th><th class="urdu" contenteditable="true">ریٹ</th><th class="urdu" contenteditable="true">وزن</th><th class="urdu" contenteditable="true">کل</th></tr>
                             </thead>
                             <tbody>
-                                <tr class="rana-item-row" id="rana-row-safi"><td class="urdu" contenteditable="true">چکن صافی</td><td class="num calc-locked rana-rate">536.5</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">23.0</td><td class="num calc-locked rana-item-total" style="font-weight:700;">12,340</td></tr>
-                                <tr class="rana-item-row" id="rana-row-boneless"><td class="urdu" contenteditable="true">بون لیس</td><td class="num calc-locked rana-rate">598.5</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">4</td><td class="num calc-locked rana-item-total" style="font-weight:700;">2,394</td></tr>
-                                <tr class="rana-item-row" id="rana-row-malai"><td class="urdu" contenteditable="true">ملائی بوٹی</td><td class="num calc-locked rana-rate">693</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">5</td><td class="num calc-locked rana-item-total" style="font-weight:700;">3,465</td></tr>
+                                <tr class="rana-item-row" id="rana-row-safi"><td class="urdu" contenteditable="true">چکن صافی</td><td class="num calc-locked rana-rate">0</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">0</td><td class="num calc-locked rana-item-total" style="font-weight:700;">0</td></tr>
+                                <tr class="rana-item-row" id="rana-row-boneless"><td class="urdu" contenteditable="true">بون لیس</td><td class="num calc-locked rana-rate">0</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">0</td><td class="num calc-locked rana-item-total" style="font-weight:700;">0</td></tr>
+                                <tr class="rana-item-row" id="rana-row-malai"><td class="urdu" contenteditable="true">ملائی بوٹی</td><td class="num calc-locked rana-rate">0</td><td class="num rana-weight" style="color:#3b82f6; font-weight:800; background: rgba(59, 130, 246, 0.05);" contenteditable="true">0</td><td class="num calc-locked rana-item-total" style="font-weight:700;">0</td></tr>
                                 
-                                <tr style="background: rgba(239, 68, 68, 0.05);"><td colspan="2" class="urdu" style="color:#ef4444; font-weight:800;" contenteditable="true">آج کا کل بل</td><td colspan="2" class="num calc-locked" id="rana-today-bill" style="color:#ef4444; font-weight:800;">18,199</td></tr>
-                                <tr style="background: rgba(100, 116, 139, 0.05);"><td colspan="2" class="urdu" style="color:var(--text-muted); font-weight:700;" contenteditable="true">کل کا بقایا</td><td colspan="2" class="num" id="rana-yesterday-rem" style="color:var(--text-main); font-weight:700;" contenteditable="true">86,605</td></tr>
-                                <tr style="background: rgba(99, 102, 241, 0.08);"><td colspan="2" class="urdu" style="color:#6366f1; font-weight:800;" contenteditable="true">کل</td><td colspan="2" class="num calc-locked" id="rana-grand-total" style="color:#6366f1; font-weight:800;">104,804</td></tr>
-                                <tr style="background: rgba(16, 185, 129, 0.08);"><td colspan="2" class="urdu" style="color:#10b981; font-weight:800;" contenteditable="true">وصول</td><td colspan="2" class="num" id="rana-paid" style="color:#10b981; font-weight:800;" contenteditable="true">18,500</td></tr>
-                                <tr style="background: rgba(239, 68, 68, 0.1);"><td colspan="2" class="urdu" style="color:#ef4444; font-weight:800;" contenteditable="true">بقایا بچا</td><td colspan="2" class="num calc-locked" id="rana-balance-rem" style="color:#ef4444; font-weight:800;">86,304</td></tr>
+                                <tr style="background: rgba(239, 68, 68, 0.05);"><td colspan="2" class="urdu" style="color:#ef4444; font-weight:800;" contenteditable="true">آج کا کل بل</td><td colspan="2" class="num calc-locked" id="rana-today-bill" style="color:#ef4444; font-weight:800;">0</td></tr>
+                                <tr style="background: rgba(100, 116, 139, 0.05);"><td colspan="2" class="urdu" style="color:var(--text-muted); font-weight:700;" contenteditable="true">کل کا بقایا</td><td colspan="2" class="num" id="rana-yesterday-rem" style="color:var(--text-main); font-weight:700;" contenteditable="true">0</td></tr>
+                                <tr style="background: rgba(99, 102, 241, 0.08);"><td colspan="2" class="urdu" style="color:#6366f1; font-weight:800;" contenteditable="true">کل</td><td colspan="2" class="num calc-locked" id="rana-grand-total" style="color:#6366f1; font-weight:800;">0</td></tr>
+                                <tr style="background: rgba(16, 185, 129, 0.08);"><td colspan="2" class="urdu" style="color:#10b981; font-weight:800;" contenteditable="true">وصول</td><td colspan="2" class="num" id="rana-paid" style="color:#10b981; font-weight:800;" contenteditable="true">0</td></tr>
+                                <tr style="background: rgba(239, 68, 68, 0.1);"><td colspan="2" class="urdu" style="color:#ef4444; font-weight:800;" contenteditable="true">بقایا بچا</td><td colspan="2" class="num calc-locked" id="rana-balance-rem" style="color:#ef4444; font-weight:800;">0</td></tr>
                             </tbody>
                         </table>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:10px; margin-top:0;">
-                        <div class="c-sub-tabs-container" id="rana-side-tabs" style="flex-direction:column; margin-bottom:0;">
+                        <div class="c-sub-tabs-container side-tabs" id="rana-side-tabs" style="flex-direction:column; margin-bottom:0; border-bottom:none; padding-bottom:0; gap:10px;">
                             <button class="c-sub-tab active" onclick="switchSubTab('rana', 'calc')"><i class="fa-solid fa-calculator" style="margin-right:6px;"></i> Today's Calculator</button>
                             <button class="c-sub-tab" onclick="switchSubTab('rana', 'history')"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i> History Data</button>
                         </div>
