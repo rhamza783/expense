@@ -880,6 +880,7 @@
         document.addEventListener('keydown', (e) => {
             const arrows = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
             if (!(e.key in arrows)) return;
+            if (!(e.target instanceof Element)) return;
             const cell = e.target.closest('td, th');
             if (!cell || !cell.isContentEditable) return;
             if (!cell.closest('table')) return;
@@ -908,15 +909,6 @@
                 if (dRow === 0) return; // don't skip non-editable cells horizontally
             }
         });
-            const topTabs = document.getElementById(`${supplier}-top-tabs`);
-            const sideTabs = document.getElementById(`${supplier}-side-tabs`);
-            if (topTabs && sideTabs) {
-                topTabs.style.display = viewType === 'calc' ? 'none' : 'flex';
-                sideTabs.style.display = viewType === 'calc' ? 'flex' : 'none';
-                topTabs.querySelectorAll('.c-sub-tab').forEach((b, i) => b.classList.toggle('active', (viewType === 'calc') === (i === 0)));
-                sideTabs.querySelectorAll('.c-sub-tab').forEach((b, i) => b.classList.toggle('active', (viewType === 'calc') === (i === 0)));
-            }
-        }
 
         // Add to History with Detailed Columns & Date Replacement Logic
         function transferToHistory(supplier) {
