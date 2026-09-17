@@ -261,6 +261,29 @@
         .ledger-table { width: 100%; border-collapse: collapse; }
         .ledger-table th { background: var(--sidebar-bg); color: var(--text-main); font-weight: 800; padding: 12px 16px; border: 1px solid var(--border-card); }
         .ledger-table td { border: 1px solid var(--border-grid); padding: 10px 12px; color: var(--text-main); text-align: center; }
+
+        /* Udhaar Khata Ledger */
+        .ledger-kpi { flex:1; display:flex; align-items:center; gap:12px; background:var(--bg-card); border:1px solid var(--border-card); border-radius:12px; padding:14px 18px; box-shadow:var(--shadow-sm); }
+        .ledger-kpi-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+        .ledger-kpi-title { font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }
+        .ledger-kpi-value { font-size:1.05rem; font-weight:800; color:var(--text-main); }
+        .ledger-card { background:var(--bg-card); border:1px solid var(--border-card); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-sm); }
+        .khata-client-chip { display:flex; align-items:center; gap:12px; background:var(--input-bg); border:1px solid var(--border-grid); border-radius:10px; padding:10px 14px; }
+        .khata-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; }
+        .khata-icon-btn { width:30px; height:30px; border-radius:8px; border:none; background:var(--input-bg); color:var(--text-muted); cursor:pointer; transition:all 0.2s; }
+        .khata-icon-btn:hover { transform:translateY(-2px); color:var(--text-main); }
+        .khata-icon-btn.wa:hover { background:rgba(37,211,102,0.15); color:#25d366; }
+        .khata-icon-btn.edit:hover { background:rgba(99,102,241,0.15); color:#6366f1; }
+        .khata-icon-btn.copy:hover { background:rgba(59,130,246,0.15); color:#3b82f6; }
+        .khata-icon-btn.img:hover { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .khata-icon-btn.del:hover { background:rgba(239,68,68,0.15); color:#ef4444; }
+        .btn-remind { background:linear-gradient(135deg,#10b981,#059669); color:#fff; border:none; border-radius:20px; padding:6px 14px; font-weight:800; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(16,185,129,0.3); transition:transform 0.2s; }
+        .btn-remind:hover { transform:translateY(-2px); }
+        .khata-row { display:grid; grid-template-columns:1fr 1fr 220px; gap:8px; padding:10px 14px; border-radius:8px; align-items:center; }
+        .khata-row:nth-child(even) { background:rgba(100,116,139,0.06); }
+        #client-modal .modal-card, #khata-modal .modal-card { width:min(680px, 92vw); max-height:88vh; overflow-y:auto; }
+        .khata-banner { background:linear-gradient(135deg,#10b981,#059669); color:#fff; text-align:center; font-weight:800; padding:10px; border-radius:10px; cursor:pointer; transition:transform 0.2s; }
+        .khata-banner:hover { transform:translateY(-2px); }
         .btn-del-client { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
         .btn-del-client:hover { background: #ef4444; color: #ffffff; }
 
@@ -747,24 +770,46 @@
         <div id="view-ledger" class="app-view">
             <div class="ledger-container" id="ledger-capture-target">
                 <div class="ledger-header-bar">
-                    <div class="ledger-search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="ledger-search" class="ledger-search-input" placeholder="Search client by Name, Phone..." oninput="filterClientLedger()">
+                    <div>
+                        <div style="font-size:1.3rem; font-weight:800; color:var(--text-main);">Client Ledger - Udhaar Khata</div>
+                        <div id="ledger-date-sub" style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;"></div>
                     </div>
-                    <button class="btn-add-client" onclick="openClientModal()"><i class="fa-solid fa-user-plus"></i> نیا کلائنٹ شامل کریں</button>
+                    <button class="btn-add-client" style="background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 4px 12px rgba(245,158,11,0.3);" onclick="openClientModal()"><i class="fa-solid fa-plus"></i> Add Client</button>
                 </div>
-                <div class="ledger-table-wrap">
-                    <table class="ledger-table" id="client-ledger-table">
-                        <thead>
-                            <tr>
-                                <th style="width:60px;">#</th><th class="urdu">نام کلائنٹ (Name)</th><th>فون نمبر (Phone)</th><th class="urdu">پتہ (Address)</th><th>کل ادھار (Udhaar)</th><th>وصول (Paid)</th><th>باقی بیلنس (Balance)</th><th style="width:90px;">ایکشن</th>
-                            </tr>
-                        </thead>
-                        <tbody id="client-ledger-tbody">
-                            <tr class="client-row">
-                                <td class="num">1</td><td class="urdu" contenteditable="true">علی رضا برادرز</td><td class="num" contenteditable="true">0300-1234567</td><td class="urdu" contenteditable="true">مین بازار، گلی نمبر 4</td><td class="num currency-cell c-udhaar" contenteditable="true">25,000 PKR</td><td class="num currency-cell c-paid" contenteditable="true">15,000 PKR</td><td class="num calc-locked c-bal" style="font-weight:800; color:#ef4444;">10,000 PKR</td><td><button class="btn-del-client" onclick="deleteClientRow(this)"><i class="fa-solid fa-trash"></i></button></td>
-                            </tr>
-                        </tbody>
+
+                <div style="display:flex; gap:16px;">
+                    <div class="ledger-kpi"><div class="ledger-kpi-icon" style="background:rgba(245,158,11,0.15); color:#f59e0b;"><i class="fa-solid fa-users"></i></div><div><div class="ledger-kpi-title">Total Clients</div><div class="ledger-kpi-value" id="lkpi-clients">0</div></div></div>
+                    <div class="ledger-kpi"><div class="ledger-kpi-icon" style="background:rgba(239,68,68,0.15); color:#ef4444;"><i class="fa-solid fa-hand-holding-dollar"></i></div><div><div class="ledger-kpi-title">Total Udhaar Pending</div><div class="ledger-kpi-value" id="lkpi-pending" style="color:#ef4444;">Rs 0.00</div></div></div>
+                    <div class="ledger-kpi"><div class="ledger-kpi-icon" style="background:rgba(16,185,129,0.15); color:#10b981;"><i class="fa-solid fa-circle-check"></i></div><div><div class="ledger-kpi-title">Total Received</div><div class="ledger-kpi-value" id="lkpi-received" style="color:#10b981;">Rs 0.00</div></div></div>
+                </div>
+
+                <div class="ledger-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-weight:800; color:var(--text-main);">Overdue Reminders</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Pending: <span id="overdue-total" style="color:#ef4444; font-weight:800;">Rs 0.00</span></div>
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">Clients with pending udhaar — tap the WhatsApp button to remind them</div>
+                    <div id="overdue-list" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"></div>
+                </div>
+
+                <div class="ledger-card">
+                    <div style="font-weight:800; color:var(--text-main);">Top Udhaar Clients</div>
+                    <div style="font-size:0.78rem; color:var(--text-muted);">Highest outstanding balances</div>
+                    <div id="top-udhaar-list" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+                </div>
+
+                <div class="ledger-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+                        <div>
+                            <div style="font-weight:800; color:var(--text-main);">All Clients</div>
+                            <div style="font-size:0.78rem; color:var(--text-muted);">Udhaar + credit ledger</div>
+                        </div>
+                        <div class="ledger-search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="ledger-search" class="ledger-search-input" placeholder="Search by name, phone or address..." oninput="filterClientLedger()"></div>
+                        <button class="btn-add-client" style="background:linear-gradient(135deg,#f59e0b,#d97706);" onclick="openClientModal()"><i class="fa-solid fa-plus"></i> Add Client</button>
+                    </div>
+                    <table class="ledger-table" id="client-ledger-table" style="margin-top:12px;">
+                        <thead><tr><th style="text-align:left;">CLIENT</th><th>LAST ACTIVITY</th><th>REMAINING BALANCE</th><th style="width:140px;">ACTIONS</th></tr></thead>
+                        <tbody id="client-ledger-tbody"></tbody>
                     </table>
                 </div>
             </div>
@@ -813,6 +858,28 @@
             <div class="modal-field"><label>Address / Location</label><input type="text" id="m-client-address" class="urdu" placeholder="مارکیٹ یا پتہ"></div>
             <div class="modal-field"><label>Opening Udhaar</label><input type="number" id="m-client-udhaar" placeholder="0"></div>
             <div class="modal-actions"><button class="btn-cancel" onclick="closeClientModal()">Cancel</button><button class="btn-add-client" onclick="submitNewClient()">Save Client</button></div>
+        </div>
+    </div>
+
+    <!-- MODAL: CLIENT KHATA DETAIL -->
+    <div class="modal-backdrop" id="khata-modal">
+        <div class="modal-card" id="khata-capture-target">
+            <div class="modal-title"><span id="khata-title"><i class="fa-solid fa-book" style="color:#6366f1; margin-right:6px;"></i> Client Khata</span><i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeKhataModal()"></i></div>
+            <div class="khata-banner" onclick="promptAddEntry(currentKhataId, 'got')"><i class="fa-solid fa-arrow-down"></i> You Got</div>
+            <div style="margin-top:10px; display:flex; gap:10px;">
+                <button class="btn-remind" style="flex:1; justify-content:center;" onclick="promptAddEntry(currentKhataId, 'udhaar')"><i class="fa-solid fa-arrow-up"></i> Udhaar Diya</button>
+            </div>
+            <div style="margin-top:14px; border:1px solid var(--border-grid); border-radius:10px; overflow:hidden;">
+                <div class="khata-row" style="background:var(--sidebar-bg); font-weight:800; font-size:0.75rem; color:var(--text-muted); letter-spacing:0.5px; border-radius:0;">
+                    <span>YOU GOT</span><span>BALANCE</span><span style="text-align:center;">ACTIONS</span>
+                </div>
+                <div id="khata-entries"></div>
+                <div class="khata-row" style="background:rgba(100,116,139,0.08); font-weight:800; border-radius:0;">
+                    <span id="khata-total-got" style="color:#10b981;">Rs 0.00</span>
+                    <span id="khata-total-bal" style="color:#ef4444;">Rs 0.00 due</span>
+                    <span></span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1072,22 +1139,223 @@
         function openClientModal() { document.getElementById('client-modal').style.display = 'flex'; document.getElementById('m-client-name').focus(); }
         function closeClientModal() { document.getElementById('client-modal').style.display = 'none'; }
         
+        function openClientModal() { document.getElementById('client-modal').style.display = 'flex'; document.getElementById('m-client-name').focus(); }
+        function closeClientModal() { document.getElementById('client-modal').style.display = 'none'; }
+
         function submitNewClient() {
             const name = document.getElementById('m-client-name').value.trim() || 'نیا کلائنٹ';
             const phone = document.getElementById('m-client-phone').value.trim() || '0300-0000000';
             const address = document.getElementById('m-client-address').value.trim() || '-';
             const udhaar = parseNum(document.getElementById('m-client-udhaar').value);
-            const tbody = document.getElementById('client-ledger-tbody');
-            const newIndex = tbody.querySelectorAll('.client-row').length + 1;
-            const tr = document.createElement('tr');
-            tr.className = 'client-row';
-            tr.innerHTML = `<td class="num">${newIndex}</td><td class="urdu" contenteditable="true">${name}</td><td class="num" contenteditable="true">${phone}</td><td class="urdu" contenteditable="true">${address}</td><td class="num currency-cell c-udhaar" contenteditable="true">${formatSmartNum(udhaar)} PKR</td><td class="num currency-cell c-paid" contenteditable="true">0 PKR</td><td class="num calc-locked c-bal" style="font-weight:800; color:#ef4444;">${formatSmartNum(udhaar)} PKR</td><td><button class="btn-del-client" onclick="deleteClientRow(this)"><i class="fa-solid fa-trash"></i></button></td>`;
-            tbody.appendChild(tr); attachCellEvents(tr); recalculateClientLedger(); closeClientModal(); saveState();
+            const client = { id: 'c' + Date.now(), name, phone, address, activity: Date.now(), entries: [] };
+            if (udhaar > 0) client.entries.push({ id: 'e' + Date.now(), type: 'udhaar', amount: udhaar, note: 'Opening Udhaar', date: new Date().toISOString().split('T')[0] });
+            ledgerClients.push(client);
+            ['m-client-name','m-client-phone','m-client-address','m-client-udhaar'].forEach(id => document.getElementById(id).value = '');
+            closeClientModal(); saveLedger(); recalculateClientLedger();
         }
 
-        function deleteClientRow(btn) { if (confirm('Delete this client?')) { btn.closest('.client-row').remove(); recalculateClientLedger(); saveState(); } }
-        function filterClientLedger() { const query = document.getElementById('ledger-search').value.toLowerCase().trim(); document.querySelectorAll('#client-ledger-tbody .client-row').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none'; }); }
-        function recalculateClientLedger() { document.querySelectorAll('#client-ledger-tbody .client-row').forEach(row => { const udhaar = parseNum(row.querySelector('.c-udhaar').innerText); const paid = parseNum(row.querySelector('.c-paid').innerText); const bal = udhaar - paid; const balCell = row.querySelector('.c-bal'); balCell.innerText = formatSmartNum(bal) + ' PKR'; balCell.style.color = bal > 0 ? '#ef4444' : '#10b981'; }); }
+        // ===== Udhaar Khata Ledger Engine =====
+        let ledgerClients = [];
+        let currentKhataId = null;
+        function loadLedger() {
+            try { ledgerClients = JSON.parse(localStorage.getItem('udhaarLedger') || '[]'); } catch (e) { ledgerClients = []; }
+            if (!localStorage.getItem('udhaarLedgerSeeded')) {
+                if (ledgerClients.length === 0) {
+                    ledgerClients.push({ id: 'demo1', name: 'Umar shah', phone: '03457486167', address: '-', activity: Date.now(), entries: [{ id: 'de1', type: 'udhaar', amount: 880, note: 'Udhaar', date: new Date().toISOString().split('T')[0] }] });
+                }
+                localStorage.setItem('udhaarLedgerSeeded', '1');
+                saveLedger();
+            }
+        }
+        function saveLedger() { localStorage.setItem('udhaarLedger', JSON.stringify(ledgerClients)); }
+        function clientBalance(c) { return c.entries.reduce((s, e) => s + (e.type === 'udhaar' ? e.amount : -e.amount), 0); }
+        function clientReceived(c) { return c.entries.filter(e => e.type === 'got').reduce((s, e) => s + e.amount, 0); }
+        function fmtRs(n) { return 'Rs ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function initials(name) { return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase(); }
+        function waLink(phone, text) { const num = (phone || '').replace(/[^0-9]/g, '').replace(/^0/, '92'); return `https://wa.me/${num}?text=${encodeURIComponent(text)}`; }
+        function timeAgo(ts) { const d = new Date(ts); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ', ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
+
+        function deleteClientRow(btn) {
+            const id = btn.dataset.id;
+            const c = ledgerClients.find(x => x.id === id);
+            if (c && confirm(`Delete client "${c.name}" and all khata entries?`)) {
+                ledgerClients = ledgerClients.filter(x => x.id !== id);
+                saveLedger(); recalculateClientLedger();
+            }
+        }
+        function filterClientLedger() {
+            const q = document.getElementById('ledger-search').value.toLowerCase().trim();
+            document.querySelectorAll('#client-ledger-tbody tr').forEach(tr => {
+                tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+
+        function recalculateClientLedger() {
+            const now = Date.now();
+            const totalPending = ledgerClients.reduce((s, c) => s + Math.max(clientBalance(c), 0), 0);
+            const totalReceived = ledgerClients.reduce((s, c) => s + clientReceived(c), 0);
+            document.getElementById('lkpi-clients').innerText = ledgerClients.length;
+            document.getElementById('lkpi-pending').innerText = fmtRs(totalPending);
+            document.getElementById('lkpi-received').innerText = fmtRs(totalReceived);
+            document.getElementById('ledger-date-sub').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+            // Overdue reminders
+            const overdue = ledgerClients.filter(c => clientBalance(c) > 0);
+            document.getElementById('overdue-total').innerText = fmtRs(totalPending);
+            document.getElementById('overdue-list').innerHTML = overdue.length === 0
+                ? '<div style="font-size:0.85rem; color:var(--text-muted);">No pending udhaar. All clear!</div>'
+                : overdue.map(c => `
+                    <div class="khata-client-chip">
+                        <div class="khata-avatar">${initials(c.name)}</div>
+                        <div style="flex:1;">
+                            <div style="font-weight:800; color:var(--text-main);">${c.name}</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">${c.phone} &nbsp;·&nbsp; Last activity: ${timeAgo(c.activity)}</div>
+                        </div>
+                        <div style="color:#ef4444; font-weight:800;">${fmtRs(clientBalance(c))}</div>
+                        <button class="btn-remind" onclick="remindClient('${c.id}')"><i class="fa-brands fa-whatsapp"></i> Remind</button>
+                    </div>`).join('');
+
+            // Top udhaar clients (top 3)
+            const top = [...ledgerClients].filter(c => clientBalance(c) > 0).sort((a, b) => clientBalance(b) - clientBalance(a)).slice(0, 3);
+            document.getElementById('top-udhaar-list').innerHTML = top.length === 0
+                ? '<div style="font-size:0.85rem; color:var(--text-muted);">No outstanding balances yet.</div>'
+                : top.map(c => `
+                    <div style="display:flex; align-items:center; gap:12px; background:linear-gradient(135deg, #f59e0b, #d97706); border-radius:10px; padding:14px 18px; cursor:pointer; color:#fff;" onclick="openKhataModal('${c.id}')">
+                        <div style="flex:1;">
+                            <div style="font-weight:800;">${c.name}</div>
+                            <div style="font-size:0.72rem; opacity:0.85;">${c.phone}</div>
+                        </div>
+                        <div style="font-weight:800; font-size:1.05rem;">${fmtRs(clientBalance(c))}</div>
+                    </div>`).join('');
+
+            // All clients table
+            const tbody = document.getElementById('client-ledger-tbody');
+            tbody.innerHTML = ledgerClients.length === 0
+                ? '<tr><td colspan="4" style="padding:24px; color:var(--text-muted);">No clients yet — click Add Client to create the first khata.</td></tr>'
+                : ledgerClients.map(c => {
+                    const bal = clientBalance(c);
+                    return `
+                    <tr>
+                        <td style="text-align:left;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="khata-avatar">${initials(c.name)}</div>
+                                <div>
+                                    <div style="font-weight:800; color:var(--text-main); cursor:pointer;" onclick="openKhataModal('${c.id}')">${c.name}</div>
+                                    <div style="font-size:0.72rem; color:var(--text-muted);">${c.phone}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-muted); font-size:0.8rem;">${timeAgo(c.activity)}</td>
+                        <td style="font-weight:800; color:${bal > 0 ? '#ef4444' : '#10b981'};">${bal > 0 ? fmtRs(bal) + ' due' : fmtRs(0)}</td>
+                        <td>
+                            <div style="display:flex; gap:6px; justify-content:center;">
+                                <button class="khata-icon-btn edit" title="Open Khata" onclick="openKhataModal('${c.id}')"><i class="fa-solid fa-pen"></i></button>
+                                <button class="khata-icon-btn wa" title="WhatsApp" onclick="remindClient('${c.id}')"><i class="fa-brands fa-whatsapp"></i></button>
+                                <button class="khata-icon-btn del" title="Delete" onclick="deleteClientRow(this)" data-id="${c.id}"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+        }
+
+        function remindClient(id) {
+            const c = ledgerClients.find(x => x.id === id);
+            if (!c) return;
+            const bal = clientBalance(c);
+            const msg = `السلام علیکم ${c.name}، آپ کا بقایا ${fmtRs(Math.max(bal, 0))} ہے۔ براہ کرم ادائیگی کر دیں۔ شکریہ!`;
+            window.open(waLink(c.phone, msg), '_blank');
+        }
+
+        // ===== Khata Modal (per-client) =====
+        function openKhataModal(id) {
+            currentKhataId = id;
+            const c = ledgerClients.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('khata-title').innerHTML = `<i class="fa-solid fa-book" style="color:#6366f1; margin-right:6px;"></i> ${c.name} — ${c.phone}`;
+            renderKhataEntries();
+            document.getElementById('khata-modal').style.display = 'flex';
+        }
+        function closeKhataModal() { document.getElementById('khata-modal').style.display = 'none'; }
+        function renderKhataEntries() {
+            const c = ledgerClients.find(x => x.id === currentKhataId);
+            if (!c) return;
+            let run = 0;
+            const rows = [...c.entries].sort((a, b) => a.id.localeCompare(b.id));
+            const html = rows.map(e => {
+                run += e.type === 'udhaar' ? e.amount : -e.amount;
+                const left = e.type === 'udhaar'
+                    ? `<span style="color:#ef4444; font-weight:800;">${fmtRs(e.amount)} udhaar</span>`
+                    : `<span style="color:#10b981; font-weight:800;">${fmtRs(e.amount)} got</span>`;
+                const balCell = `<span style="color:${run > 0 ? '#ef4444' : '#10b981'}; font-weight:700;">${run > 0 ? fmtRs(run) + ' due' : fmtRs(-run)}</span>`;
+                const waMsg = e.type === 'udhaar' ? `السلام علیکم ${c.name}، ${fmtRs(e.amount)} کا ادھار درج ہوا ہے۔` : `السلام علیکم ${c.name}، آپ کی ادائیگی ${fmtRs(e.amount)} موصول ہوئی۔ شکریہ!`;
+                return `
+                <div class="khata-row">
+                    <div>
+                        ${left}
+                        <div style="font-size:0.7rem; color:var(--text-muted);">${e.date}${e.note ? ' · ' + e.note : ''}</div>
+                    </div>
+                    <div>${balCell}</div>
+                    <div style="display:flex; gap:4px; justify-content:center;">
+                        <button class="khata-icon-btn edit" title="Edit" onclick="editEntry('${e.id}')"><i class="fa-solid fa-pen"></i></button>
+                        <button class="khata-icon-btn wa" title="WhatsApp" onclick="window.open('${waLink(c.phone, waMsg)}','_blank')"><i class="fa-brands fa-whatsapp"></i></button>
+                        <button class="khata-icon-btn copy" title="Copy" onclick="copyEntry('${e.id}')"><i class="fa-solid fa-copy"></i></button>
+                        <button class="khata-icon-btn img" title="Save Image" onclick="saveKhataImage()"><i class="fa-solid fa-image"></i></button>
+                        <button class="khata-icon-btn del" title="Delete" onclick="deleteEntry('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('khata-entries').innerHTML = html || '<div style="padding:16px; color:var(--text-muted); font-size:0.85rem;">No entries yet.</div>';
+            const bal = clientBalance(c);
+            document.getElementById('khata-total-got').innerText = fmtRs(clientReceived(c));
+            document.getElementById('khata-total-bal').innerText = bal > 0 ? fmtRs(bal) + ' due' : fmtRs(0);
+        }
+        function promptAddEntry(id, type) {
+            const c = ledgerClients.find(x => x.id === id);
+            if (!c) return;
+            const val = prompt(type === 'got' ? 'وصول شدہ رقم (Amount received):' : 'ادھار رقم (Udhaar amount):', '');
+            const amount = parseNum(val || '');
+            if (!amount) return;
+            const note = prompt('نوٹ (Note - optional):', '') || '';
+            c.entries.push({ id: 'e' + Date.now(), type, amount, note, date: new Date().toISOString().split('T')[0] });
+            c.activity = Date.now();
+            saveLedger(); renderKhataEntries(); recalculateClientLedger();
+        }
+        function editEntry(eid) {
+            const c = ledgerClients.find(x => x.id === currentKhataId);
+            const e = c && c.entries.find(x => x.id === eid);
+            if (!e) return;
+            const val = prompt('رقم درست کریں (Correct amount):', e.amount);
+            const amount = parseNum(val || '');
+            if (!amount) return;
+            e.amount = amount; e.note = prompt('نوٹ (Note):', e.note || '') || e.note;
+            c.activity = Date.now();
+            saveLedger(); renderKhataEntries(); recalculateClientLedger();
+        }
+        function deleteEntry(eid) {
+            const c = ledgerClients.find(x => x.id === currentKhataId);
+            if (c && confirm('Delete this entry?')) {
+                c.entries = c.entries.filter(x => x.id !== eid);
+                saveLedger(); renderKhataEntries(); recalculateClientLedger();
+            }
+        }
+        function copyEntry(eid) {
+            const c = ledgerClients.find(x => x.id === currentKhataId);
+            const e = c && c.entries.find(x => x.id === eid);
+            if (!e) return;
+            const text = `${c.name} (${c.phone})\n${e.date}\n${e.type === 'udhaar' ? 'Udhaar' : 'You Got'}: ${fmtRs(e.amount)}${e.note ? '\n' + e.note : ''}\nBalance: ${fmtRs(clientBalance(c))}`;
+            if (navigator.clipboard) navigator.clipboard.writeText(text); else prompt('Copy:', text);
+        }
+        function saveKhataImage() {
+            if (typeof html2canvas !== 'function') { alert('Screenshot engine not loaded.'); return; }
+            const c = ledgerClients.find(x => x.id === currentKhataId);
+            html2canvas(document.getElementById('khata-capture-target'), { scale: 1.5 }).then(canvas => {
+                const a = document.createElement('a');
+                a.download = `khata_${c.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.png`;
+                a.href = canvas.toDataURL('image/png');
+                a.click();
+            });
+        }
+
         function updateSelectBadge(select) { select.classList.remove('att-p', 'att-a', 'att-l', 'att-h', 'att-off'); const val = select.value; if (val === 'P') select.classList.add('att-p'); else if (val === 'A') select.classList.add('att-a'); else if (val === 'L') select.classList.add('att-l'); else if (val === 'H') select.classList.add('att-h'); else if (val === 'Off') select.classList.add('att-off'); saveState(); }
 
         const undoStack = []; const redoStack = []; let isPerformingHistoryAction = false;
@@ -1208,7 +1476,7 @@
             document.getElementById('dash-diff').innerText = formatSmartNum(grandDiff) + ' PKR';
         }
 
-        recalculateAll(); recalculateChicken(); recalculateClientLedger(); saveState();
+        loadLedger(); recalculateAll(); recalculateChicken(); recalculateClientLedger(); saveState();
     </script>
     <script>
         // PWA Service Worker Registration
