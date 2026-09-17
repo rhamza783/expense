@@ -321,10 +321,13 @@
                     <i class="fa-solid fa-file-invoice-dollar"></i><span class="menu-label">Daily Sheet</span>
                 </div>
                 <div class="nav-item" data-title="Chicken Calculator" onclick="switchPage('chicken')">
-                    <i class="fa-solid fa-drumstick-bite"></i><span class="menu-label">Analytics</span><span class="badge-pill">New</span>
+                    <i class="fa-solid fa-drumstick-bite"></i><span class="menu-label">Chicken Calcu</span><span class="badge-pill">New</span>
                 </div>
                 <div class="nav-item" data-title="Client Ledger" onclick="switchPage('ledger')">
                     <i class="fa-regular fa-address-book"></i><span class="menu-label">Client Ledger</span><span class="badge-circle">4</span>
+                </div>
+                <div class="nav-item" data-title="BBQ Calculator" onclick="switchPage('bbq')">
+                    <i class="fa-solid fa-fire-burner"></i><span class="menu-label">BBQ Calculator</span>
                 </div>
                 <div class="nav-item" data-title="Settings" onclick="switchPage('settings')">
                     <i class="fa-solid fa-gear"></i><span class="menu-label">Settings</span>
@@ -818,6 +821,116 @@
         <!-- ==============================================
              VIEW 4: SETTINGS
              ============================================== -->
+        <!-- ==============================================
+             VIEW: BBQ CALCULATOR
+             ============================================== -->
+        <div id="view-bbq" class="app-view">
+            <style>
+                #view-bbq.active-view { display: flex; justify-content: center; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+                #view-bbq .calculator { background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 30px; width: 100%; max-width: 500px; }
+                #view-bbq .bbq-header { text-align: center; margin-bottom: 25px; }
+                #view-bbq .bbq-header h1 { color: #e74c3c; font-size: 28px; margin-bottom: 5px; }
+                #view-bbq .bbq-header p { color: #666; font-size: 14px; }
+                #view-bbq .waste-info { background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 12px; margin-bottom: 20px; text-align: center; }
+                #view-bbq .waste-info p { color: #856404; font-size: 13px; }
+                #view-bbq .product-selector { display: flex; gap: 10px; margin-bottom: 25px; }
+                #view-bbq .product-btn { flex: 1; padding: 15px 10px; border: 2px solid #ddd; border-radius: 12px; background: #f8f9fa; cursor: pointer; transition: all 0.3s ease; text-align: center; }
+                #view-bbq .product-btn:hover { border-color: #e74c3c; transform: translateY(-2px); }
+                #view-bbq .product-btn.active { background: linear-gradient(135deg, #e74c3c, #c0392b); border-color: #e74c3c; color: white; }
+                #view-bbq .product-btn .name { font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px; }
+                #view-bbq .product-btn .price { font-size: 12px; opacity: 0.8; }
+                #view-bbq .product-btn.active .price { color: #ffd700; }
+                #view-bbq .input-section { background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
+                #view-bbq .input-section h3 { color: #333; font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+                #view-bbq .input-group { display: flex; gap: 10px; align-items: center; }
+                #view-bbq .input-group input { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 18px; font-weight: bold; text-align: center; transition: border-color 0.3s; background: #fff; color: #333; }
+                #view-bbq .input-group input:focus { outline: none; border-color: #e74c3c; }
+                #view-bbq .input-group .unit { background: #e74c3c; color: white; padding: 15px 20px; border-radius: 10px; font-weight: bold; }
+                #view-bbq .results { background: linear-gradient(135deg, #27ae60, #2ecc71); border-radius: 15px; padding: 20px; color: white; }
+                #view-bbq .results h3 { text-align: center; margin-bottom: 15px; font-size: 18px; }
+                #view-bbq .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+                #view-bbq .result-item { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; text-align: center; }
+                #view-bbq .result-item.full-width { grid-column: 1 / -1; background: rgba(255,255,255,0.3); }
+                #view-bbq .result-item label { display: block; font-size: 12px; opacity: 0.9; margin-bottom: 5px; }
+                #view-bbq .result-item .value { font-size: 24px; font-weight: bold; }
+                #view-bbq .result-item.full-width .value { font-size: 32px; color: #ffd700; }
+                #view-bbq .conversion-info { margin-top: 20px; background: #e8f5e9; border-radius: 10px; padding: 15px; }
+                #view-bbq .conversion-info h4 { color: #2e7d32; margin-bottom: 10px; font-size: 14px; }
+                #view-bbq .conversion-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #a5d6a7; font-size: 13px; color: #333; }
+                #view-bbq .conversion-row:last-child { border-bottom: none; }
+                #view-bbq .conversion-row .arrow { color: #27ae60; font-weight: bold; }
+                #view-bbq .clear-btn { width: 100%; padding: 15px; background: #95a5a6; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.3s; }
+                #view-bbq .clear-btn:hover { background: #7f8c8d; }
+                @media (max-width: 480px) {
+                    #view-bbq .product-selector { flex-direction: column; }
+                    #view-bbq .result-grid { grid-template-columns: 1fr; }
+                    #view-bbq .result-item.full-width { grid-column: 1; }
+                }
+            </style>
+            <div class="calculator">
+                <div class="bbq-header">
+                    <h1>🍢 BBQ Calculator</h1>
+                    <p>Weight & Price Converter with Waste Adjustment</p>
+                </div>
+                <div class="waste-info">
+                    <p>⚠️ <strong>100g waste per 1kg</strong> — Scale 1000g = Selling 900g</p>
+                </div>
+                <div class="product-selector">
+                    <div class="product-btn active" data-product="tikka" data-price="1200">
+                        <span class="name">🍗 Tikka</span>
+                        <span class="price">1200 PKR/kg</span>
+                    </div>
+                    <div class="product-btn" data-product="malai" data-price="1600">
+                        <span class="name">🍖 Malai Botti</span>
+                        <span class="price">1600 PKR/kg</span>
+                    </div>
+                    <div class="product-btn" data-product="kabab" data-price="1400">
+                        <span class="name">🥩 Kabab</span>
+                        <span class="price">1400 PKR/kg</span>
+                    </div>
+                </div>
+                <div class="input-section">
+                    <h3><span>⚖️</span> Scale Weight (Machine Reading)</h3>
+                    <div class="input-group">
+                        <input type="number" id="scaleWeight" placeholder="Enter scale weight" oninput="bbqFromWeight()">
+                        <span class="unit">g</span>
+                    </div>
+                </div>
+                <div class="input-section">
+                    <h3><span>💰</span> OR Enter Price (Customer Pays)</h3>
+                    <div class="input-group">
+                        <input type="number" id="priceInput" placeholder="Enter price" oninput="bbqFromPrice()">
+                        <span class="unit">PKR</span>
+                    </div>
+                </div>
+                <div class="results">
+                    <h3>📊 Results</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <label>Scale Weight</label>
+                            <div class="value" id="resultScaleWeight">0 g</div>
+                        </div>
+                        <div class="result-item">
+                            <label>Selling Weight (−10%)</label>
+                            <div class="value" id="resultSellingWeight">0 g</div>
+                        </div>
+                        <div class="result-item full-width">
+                            <label>Total Price</label>
+                            <div class="value" id="resultPrice">0 PKR</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="conversion-info">
+                    <h4>📋 Quick Reference (Current Product)</h4>
+                    <div class="conversion-row"><span>Scale: 250g</span><span class="arrow">→</span><span id="ref250">Sell: 225g</span></div>
+                    <div class="conversion-row"><span>Scale: 500g</span><span class="arrow">→</span><span id="ref500">Sell: 450g</span></div>
+                    <div class="conversion-row"><span>Scale: 1000g</span><span class="arrow">→</span><span id="ref1000">Sell: 900g</span></div>
+                    <div class="conversion-row"><span>Scale: 2000g</span><span class="arrow">→</span><span id="ref2000">Sell: 1800g</span></div>
+                </div>
+                <button class="clear-btn" onclick="bbqClearAll()">🔄 Clear All</button>
+            </div>
+        </div>
+
         <div id="view-settings" class="app-view">
             <div class="settings-container">
                 <!-- FORMULAS -->
@@ -920,6 +1033,7 @@
             if (page === 'daily') { document.getElementById('view-daily').classList.add('active-view'); document.querySelector('[data-title="Daily Sheet"]').classList.add('active'); title.innerText = 'Daily Income & Expense Sheet'; }
             else if (page === 'chicken') { document.getElementById('view-chicken').classList.add('active-view'); document.querySelector('[data-title="Chicken Calculator"]').classList.add('active'); title.innerText = 'Chicken Rate Analytics'; recalculateChicken(); }
             else if (page === 'ledger') { document.getElementById('view-ledger').classList.add('active-view'); document.querySelector('[data-title="Client Ledger"]').classList.add('active'); title.innerText = 'Client Ledger & Customer Directory'; recalculateClientLedger(); }
+            else if (page === 'bbq') { document.getElementById('view-bbq').classList.add('active-view'); document.querySelector('[data-title="BBQ Calculator"]').classList.add('active'); title.innerText = 'BBQ Weight & Price Calculator'; }
             else if (page === 'settings') { document.getElementById('view-settings').classList.add('active-view'); document.querySelector('[data-title="Settings"]').classList.add('active'); title.innerText = 'System Settings & Data Management'; }
         }
 
@@ -1479,6 +1593,59 @@
         loadLedger(); recalculateAll(); recalculateChicken(); recalculateClientLedger(); saveState();
     </script>
     <script>
+        // ===== BBQ Calculator =====
+        const bbqProducts = { tikka: { name: 'Tikka', price: 1200 }, malai: { name: 'Malai Botti', price: 1600 }, kabab: { name: 'Kabab', price: 1400 } };
+        let bbqCurrentProduct = 'tikka';
+        const BBQ_WASTE = 0.9;
+        document.querySelectorAll('#view-bbq .product-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('#view-bbq .product-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                bbqCurrentProduct = this.dataset.product;
+                bbqUpdateQuickReference(); bbqRecalc();
+            });
+        });
+        function bbqPrice() { return bbqProducts[bbqCurrentProduct].price; }
+        function bbqFromWeight() {
+            const scaleWeight = parseFloat(document.getElementById('scaleWeight').value) || 0;
+            const sellingWeight = scaleWeight * BBQ_WASTE;
+            const totalPrice = sellingWeight * (bbqPrice() / 900);
+            document.getElementById('priceInput').value = '';
+            bbqResults(scaleWeight, sellingWeight, totalPrice);
+        }
+        function bbqFromPrice() {
+            const price = parseFloat(document.getElementById('priceInput').value) || 0;
+            const pricePerGram = bbqPrice() / 900;
+            const sellingWeight = price / pricePerGram;
+            const scaleWeight = sellingWeight / BBQ_WASTE;
+            document.getElementById('scaleWeight').value = '';
+            bbqResults(scaleWeight, sellingWeight, price);
+        }
+        function bbqResults(scaleWeight, sellingWeight, price) {
+            document.getElementById('resultScaleWeight').textContent = Math.round(scaleWeight) + ' g';
+            document.getElementById('resultSellingWeight').textContent = Math.round(sellingWeight) + ' g';
+            document.getElementById('resultPrice').textContent = Math.round(price) + ' PKR';
+        }
+        function bbqRecalc() {
+            const sw = document.getElementById('scaleWeight').value;
+            const pi = document.getElementById('priceInput').value;
+            if (sw) bbqFromWeight(); else if (pi) bbqFromPrice();
+        }
+        function bbqUpdateQuickReference() {
+            const pricePerGram = bbqPrice() / 900;
+            [250, 500, 1000, 2000].forEach(scale => {
+                const sell = scale * BBQ_WASTE;
+                const cost = Math.round(sell * pricePerGram);
+                document.getElementById('ref' + scale).textContent = `Sell: ${sell}g = ${cost} PKR`;
+            });
+        }
+        function bbqClearAll() {
+            document.getElementById('scaleWeight').value = '';
+            document.getElementById('priceInput').value = '';
+            bbqResults(0, 0, 0);
+        }
+        bbqUpdateQuickReference();
+
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
