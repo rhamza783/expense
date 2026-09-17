@@ -826,8 +826,28 @@
              ============================================== -->
         <div id="view-bbq" class="app-view">
             <style>
-                #view-bbq.active-view { display: flex; justify-content: center; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-                #view-bbq .calculator { background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 30px; width: 100%; max-width: 500px; }
+                #view-bbq.active-view { display: block; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 100%; }
+                #view-bbq .calculator { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 20px; box-shadow: var(--shadow-sm); padding: 30px; width: 100%; max-width: 100%; }
+                #view-bbq .bbq-header h1 { color: var(--focus-ring, #6366f1); }
+                #view-bbq .bbq-header p { color: var(--text-muted); }
+                #view-bbq .waste-info { background: var(--input-bg); border: 1px solid var(--border-card); }
+                #view-bbq .waste-info p { color: var(--text-muted); }
+                #view-bbq .product-btn { border: 2px solid var(--border-card); background: var(--input-bg); }
+                #view-bbq .product-btn .name, #view-bbq .input-section h3 { color: var(--text-main); }
+                #view-bbq .product-btn:hover { border-color: #6366f1; }
+                #view-bbq .product-btn.active { background: linear-gradient(135deg, #6366f1, #4f46e5); border-color: #6366f1; }
+                #view-bbq .input-section { background: var(--input-bg); }
+                #view-bbq .input-group input { border: 2px solid var(--border-card); background: var(--bg-card); color: var(--text-main); }
+                #view-bbq .input-group input:focus { border-color: #6366f1; }
+                #view-bbq .input-group .unit { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+                #view-bbq .conversion-info { background: var(--input-bg); }
+                #view-bbq .conversion-info h4 { color: var(--text-main); }
+                #view-bbq .conversion-row { color: var(--text-main); border-bottom: 1px dashed var(--border-grid); }
+                #view-bbq .conversion-row .arrow { color: var(--focus-ring, #6366f1); }
+                #view-bbq .clear-btn { background: var(--sidebar-bg); }
+                #view-bbq .results { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+                #view-bbq .result-item.full-width .value { color: #fff; }
+                #view-bbq .clear-btn { color: var(--text-main); }
                 #view-bbq .bbq-header { text-align: center; margin-bottom: 25px; }
                 #view-bbq .bbq-header h1 { color: #e74c3c; font-size: 28px; margin-bottom: 5px; }
                 #view-bbq .bbq-header p { color: #666; font-size: 14px; }
