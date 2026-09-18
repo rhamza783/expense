@@ -1089,6 +1089,10 @@
         }
 
         // Arrow key navigation between editable table cells
+        // Throttled + repeat-guarded so fast keypresses never queue up and
+        // keep jumping cells after the keys are released.
+        let lastArrowNav = 0;
+        let arrowNavPending = false;
         document.addEventListener('keydown', (e) => {
             const arrows = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
             if (!(e.key in arrows)) return;
@@ -1096,30 +1100,49 @@
             const cell = e.target.closest('td, th');
             if (!cell || !cell.isContentEditable) return;
             if (!cell.closest('table')) return;
-            const [dRow, dCol] = arrows[e.key];
-            const table = cell.closest('table');
-            const rows = Array.from(table.rows);
-            let r = cell.parentElement.rowIndex, c = cell.cellIndex;
-            // move to next editable cell in the given direction
-            while (true) {
-                if (dRow !== 0) r += dRow; else c += dCol;
-                if (r < 0 || r >= rows.length) return;
-                const rowCells = rows[r].cells;
-                if (c < 0 || c >= rowCells.length) return;
-                const target = rowCells[c];
-                if (target.isContentEditable && !target.classList.contains('calc-locked') && !target.querySelector('input, select')) {
-                    e.preventDefault();
-                    target.focus();
-                    const range = document.createRange();
-                    range.selectNodeContents(target);
-                    range.collapse(false);
-                    const sel = window.getSelection();
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                    return;
+
+            // 1) Ignore OS auto-repeat entirely
+            if (e.repeat) { e.preventDefault(); return; }
+
+            // 2) Throttle: max ~8 navigations/sec, drop anything faster
+            const now = performance.now();
+            if (now - lastArrowNav < 120) { e.preventDefault(); return; }
+
+            // 3) Coalesce: if a navigation is already scheduled this frame, drop extras
+            if (arrowNavPending) { e.preventDefault(); return; }
+            arrowNavPending = true;
+            lastArrowNav = now;
+            e.preventDefault();
+
+            requestAnimationFrame(() => {
+                arrowNavPending = false;
+                const active = document.activeElement;
+                if (!active || !active.isContentEditable) return;
+                const startCell = active.closest('td, th');
+                if (!startCell || !startCell.closest('table')) return;
+                const [dRow, dCol] = arrows[e.key];
+                const table = startCell.closest('table');
+                const rows = Array.from(table.rows);
+                let r = startCell.parentElement.rowIndex, c = startCell.cellIndex;
+                while (true) {
+                    if (dRow !== 0) r += dRow; else c += dCol;
+                    if (r < 0 || r >= rows.length) return;
+                    const rowCells = rows[r].cells;
+                    if (c < 0 || c >= rowCells.length) return;
+                    const target = rowCells[c];
+                    if (target.isContentEditable && !target.classList.contains('calc-locked') && !target.querySelector('input, select')) {
+                        target.focus();
+                        const range = document.createRange();
+                        range.selectNodeContents(target);
+                        range.collapse(false);
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        return;
+                    }
+                    if (dRow === 0) return; // don't skip non-editable cells horizontally
                 }
-                if (dRow === 0) return; // don't skip non-editable cells horizontally
-            }
+            });
         });
 
         // Add to History with Detailed Columns & Date Replacement Logic
@@ -1502,7 +1525,22 @@
         const undoStack = []; const redoStack = []; let isPerformingHistoryAction = false;
         function captureCurrentSnapshot() { const editables = Array.from(document.querySelectorAll('[contenteditable="true"]')).map(el => el.innerText); const inputs = Array.from(document.querySelectorAll('input:not(#ledger-search)')).map(el => el.value); const selects = Array.from(document.querySelectorAll('select')).map(el => el.value); return JSON.stringify({ editables, inputs, selects }); }
         function restoreSnapshot(snapshotStr) { if (!snapshotStr) return; isPerformingHistoryAction = true; const data = JSON.parse(snapshotStr); const editables = document.querySelectorAll('[contenteditable="true"]'); data.editables.forEach((val, i) => { if (editables[i]) editables[i].innerText = val; }); const inputs = document.querySelectorAll('input:not(#ledger-search)'); data.inputs.forEach((val, i) => { if (inputs[i]) inputs[i].value = val; }); const selects = document.querySelectorAll('select'); data.selects.forEach((val, i) => { if (selects[i]) { selects[i].value = val; updateSelectBadge(selects[i]); } }); recalculateAll(); recalculateChicken(); recalculateClientLedger(); isPerformingHistoryAction = false; }
-        function saveState() { if (isPerformingHistoryAction) return; const currentSnap = captureCurrentSnapshot(); if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== currentSnap) { undoStack.push(currentSnap); if (undoStack.length > 50) undoStack.shift(); redoStack.length = 0; } }
+        function saveState() {
+            if (isPerformingHistoryAction) return;
+            // Debounced: rapid cell jumps trigger many blur events; serializing
+            // the whole DOM on each one saturates the thread and makes queued
+            // keydown events fire after the keys are released. Capture once,
+            // shortly after the burst ends.
+            clearTimeout(saveState._t);
+            saveState._t = setTimeout(() => {
+                const currentSnap = captureCurrentSnapshot();
+                if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== currentSnap) {
+                    undoStack.push(currentSnap);
+                    if (undoStack.length > 50) undoStack.shift();
+                    redoStack.length = 0;
+                }
+            }, 250);
+        }
         function undoState() { if (undoStack.length > 1) { const currentState = undoStack.pop(); redoStack.push(currentState); restoreSnapshot(undoStack[undoStack.length - 1]); } }
         function redoState() { if (redoStack.length > 0) { const nextState = redoStack.pop(); undoStack.push(nextState); restoreSnapshot(nextState); } }
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redoState() : undoState(); } else if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); redoState(); } });
