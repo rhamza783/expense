@@ -828,7 +828,7 @@
             <style>
                 #view-bbq.active-view { display: block; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 100%; }
                 #view-bbq .calculator { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 20px; box-shadow: var(--shadow-sm); padding: 30px; width: 100%; }
-                #view-bbq .bbq-cols { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 26px; align-items: start; }
+                #view-bbq .bbq-cols { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 26px; align-items: stretch; }
                 #view-bbq .bbq-header { text-align: center; margin-bottom: 25px; }
                 #view-bbq .bbq-header h1 { color: var(--focus-ring, #6366f1); font-size: 28px; margin-bottom: 5px; }
                 #view-bbq .bbq-header p { color: var(--text-muted); font-size: 14px; }
@@ -839,13 +839,15 @@
                 #view-bbq .product-btn .name { font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px; color: var(--text-main); }
                 #view-bbq .product-btn.active .name { color: #fff; }
                 #view-bbq .product-btn .price { font-size: 12px; opacity: 0.8; }
-                #view-bbq .input-section { background: var(--input-bg); border-radius: 15px; padding: 20px; margin-bottom: 15px; }
-                #view-bbq .input-section h3 { color: var(--text-main); font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+                #view-bbq .bbq-left { display: flex; flex-direction: column; }
+                #view-bbq .bbq-right { display: flex; align-items: stretch; }
+                #view-bbq .input-section { background: var(--input-bg); border-radius: 15px; padding: 14px; margin-bottom: 12px; }
+                #view-bbq .input-section h3 { color: var(--text-main); font-size: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
                 #view-bbq .input-group { display: flex; gap: 10px; align-items: center; }
-                #view-bbq .input-group input { flex: 1; padding: 15px; border: 2px solid var(--border-card); border-radius: 10px; font-size: 18px; font-weight: bold; text-align: center; transition: border-color 0.3s; background: var(--bg-card); color: var(--text-main); }
+                #view-bbq .input-group input { flex: 1; padding: 10px; border: 2px solid var(--border-card); border-radius: 10px; font-size: 16px; font-weight: bold; text-align: center; transition: border-color 0.3s; background: var(--bg-card); color: var(--text-main); }
                 #view-bbq .input-group input:focus { outline: none; border-color: #6366f1; }
-                #view-bbq .input-group .unit { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 15px 20px; border-radius: 10px; font-weight: bold; }
-                #view-bbq .results { background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 15px; padding: 20px; color: white; position: sticky; top: 20px; }
+                #view-bbq .input-group .unit { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 10px 18px; border-radius: 10px; font-weight: bold; }
+                #view-bbq .results { background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 15px; padding: 20px; color: white; position: sticky; top: 20px; flex: 1; min-height: 440px; }
                 #view-bbq .results h3 { text-align: center; margin-bottom: 15px; font-size: 18px; }
                 #view-bbq .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
                 #view-bbq .result-item { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; text-align: center; }
@@ -953,6 +955,30 @@
                     <div><button class="setting-action-btn primary" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="generateZipBackup()"><i class="fa-solid fa-download"></i> Download ZIP Backup</button></div>
                 </div>
 
+                <!-- ITEM PRICES -->
+                <div class="setting-section-card">
+                    <div class="setting-section-title"><i class="fa-solid fa-tags" style="color:#f59e0b;"></i> Item Price Management</div>
+                    <div class="urdu" style="font-size:0.9rem; color:var(--text-muted);">BBQ Calculator کے لیے ہر آئٹم کا فی کلوگرام ریٹ تبدیل کریں۔</div>
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="urdu" style="min-width:120px; font-weight:700;">🍗 Tikka</span>
+                            <input type="number" id="price-tikka" value="1200" style="flex:1; padding:10px; border:2px solid var(--border-card); border-radius:8px; background:var(--bg-card); color:var(--text-main); font-weight:800;">
+                            <span class="urdu" style="font-size:0.8rem; color:var(--text-muted);">PKR/kg</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="urdu" style="min-width:120px; font-weight:700;">🍖 Malai Boti</span>
+                            <input type="number" id="price-malai" value="1600" style="flex:1; padding:10px; border:2px solid var(--border-card); border-radius:8px; background:var(--bg-card); color:var(--text-main); font-weight:800;">
+                            <span class="urdu" style="font-size:0.8rem; color:var(--text-muted);">PKR/kg</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="urdu" style="min-width:120px; font-weight:700;">🥩 Kabab</span>
+                            <input type="number" id="price-kabab" value="1400" style="flex:1; padding:10px; border:2px solid var(--border-card); border-radius:8px; background:var(--bg-card); color:var(--text-main); font-weight:800;">
+                            <span class="urdu" style="font-size:0.8rem; color:var(--text-muted);">PKR/kg</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;"><button class="setting-action-btn primary" style="background: linear-gradient(135deg, #f59e0b, #d97706);" onclick="saveBBQPrices()"><i class="fa-solid fa-floppy-disk"></i> Save Prices</button></div>
+                </div>
+
                 <!-- RESET -->
                 <div class="setting-section-card">
                     <div class="setting-section-title"><i class="fa-solid fa-trash-can" style="color:#ef4444;"></i> Reset System Data</div>
@@ -1034,7 +1060,7 @@
             else if (page === 'chicken') { document.getElementById('view-chicken').classList.add('active-view'); document.querySelector('[data-title="Chicken Calculator"]').classList.add('active'); title.innerText = 'Chicken Rate Analytics'; recalculateChicken(); }
             else if (page === 'ledger') { document.getElementById('view-ledger').classList.add('active-view'); document.querySelector('[data-title="Client Ledger"]').classList.add('active'); title.innerText = 'Client Ledger & Customer Directory'; recalculateClientLedger(); }
             else if (page === 'bbq') { document.getElementById('view-bbq').classList.add('active-view'); document.querySelector('[data-title="BBQ Calculator"]').classList.add('active'); title.innerText = 'BBQ Weight & Price Calculator'; }
-            else if (page === 'settings') { document.getElementById('view-settings').classList.add('active-view'); document.querySelector('[data-title="Settings"]').classList.add('active'); title.innerText = 'System Settings & Data Management'; }
+            else if (page === 'settings') { document.getElementById('view-settings').classList.add('active-view'); document.querySelector('[data-title="Settings"]').classList.add('active'); title.innerText = 'System Settings & Data Management'; loadBBQPrices(); }
         }
 
         // Tabbing System for Chicken Page
@@ -1590,11 +1616,29 @@
             document.getElementById('dash-diff').innerText = formatSmartNum(grandDiff) + ' PKR';
         }
 
-        loadLedger(); recalculateAll(); recalculateChicken(); recalculateClientLedger(); saveState();
+        loadLedger(); loadBBQPrices(); recalculateAll(); recalculateChicken(); recalculateClientLedger(); saveState();
     </script>
     <script>
         // ===== BBQ Calculator =====
         const bbqProducts = { tikka: { name: 'Tikka', price: 1200 }, malai: { name: 'Malai Botti', price: 1600 }, kabab: { name: 'Kabab', price: 1400 } };
+        function loadBBQPrices() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('bbqPrices') || '{}');
+                if (saved.tikka) bbqProducts.tikka.price = saved.tikka;
+                if (saved.malai) bbqProducts.malai.price = saved.malai;
+                if (saved.kabab) bbqProducts.kabab.price = saved.kabab;
+            } catch (e) {}
+            document.getElementById('price-tikka').value = bbqProducts.tikka.price;
+            document.getElementById('price-malai').value = bbqProducts.malai.price;
+            document.getElementById('price-kabab').value = bbqProducts.kabab.price;
+        }
+        function saveBBQPrices() {
+            bbqProducts.tikka.price = parseNum(document.getElementById('price-tikka').value);
+            bbqProducts.malai.price = parseNum(document.getElementById('price-malai').value);
+            bbqProducts.kabab.price = parseNum(document.getElementById('price-kabab').value);
+            localStorage.setItem('bbqPrices', JSON.stringify({ tikka: bbqProducts.tikka.price, malai: bbqProducts.malai.price, kabab: bbqProducts.kabab.price }));
+            bbqUpdateQuickReference(); bbqRecalc();
+        }
         let bbqCurrentProduct = 'tikka';
         const BBQ_WASTE = 0.9;
         document.querySelectorAll('#view-bbq .product-btn').forEach(btn => {
