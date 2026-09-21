@@ -1124,23 +1124,60 @@
                 const table = startCell.closest('table');
                 const rows = Array.from(table.rows);
                 let r = startCell.parentElement.rowIndex, c = startCell.cellIndex;
+                const pickCell = (cand) => {
+                    cand.focus();
+                    const range = document.createRange();
+                    range.selectNodeContents(cand);
+                    range.collapse(false);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                };
+                const isEditable = (t) => t && t.isContentEditable && !t.classList.contains('calc-locked') && !t.querySelector('input, select');
                 while (true) {
                     if (dRow !== 0) r += dRow; else c += dCol;
-                    if (r < 0 || r >= rows.length) return;
-                    const rowCells = rows[r].cells;
-                    if (c < 0 || c >= rowCells.length) return;
-                    const target = rowCells[c];
-                    if (target.isContentEditable && !target.classList.contains('calc-locked') && !target.querySelector('input, select')) {
-                        target.focus();
-                        const range = document.createRange();
-                        range.selectNodeContents(target);
-                        range.collapse(false);
-                        const sel = window.getSelection();
-                        sel.removeAllRanges();
-                        sel.addRange(range);
+                    if (r < 0 || r >= rows.length) {
+                        // Table edge: jump to the adjacent table in DOM order
+                        const tables = Array.from(document.querySelectorAll('.app-view.active-view table'));
+                        const ti = tables.indexOf(table);
+                        const next = dRow > 0 || dCol > 0 ? tables[ti + 1] : tables[ti - 1];
+                        if (!next) return;
+                        const cells = Array.from(next.querySelectorAll('td, th')).filter(isEditable);
+                        if (cells.length === 0) return;
+                        pickCell(dRow > 0 || dCol > 0 ? cells[0] : cells[cells.length - 1]);
                         return;
                     }
-                    if (dRow === 0) return; // don't skip non-editable cells horizontally
+                    const rowCells = rows[r].cells;
+                    if (c < 0 || c >= rowCells.length) {
+                        // Row edge: jump to adjacent table as well
+                        const tables = Array.from(document.querySelectorAll('.app-view.active-view table'));
+                        const ti = tables.indexOf(table);
+                        const next = dCol > 0 ? tables[ti + 1] : tables[ti - 1];
+                        if (!next) return;
+                        const cells = Array.from(next.querySelectorAll('td, th')).filter(isEditable);
+                        if (cells.length === 0) return;
+                        pickCell(dCol > 0 ? cells[0] : cells[cells.length - 1]);
+                        return;
+                    }
+                    const target = rowCells[c];
+                    if (isEditable(target)) {
+                        pickCell(target);
+                        return;
+                    }
+                    if (dRow === 0) {
+                        // Horizontal: if the row end is reached, try adjacent table
+                        const isEdge = (dCol > 0 && c === rowCells.length - 1) || (dCol < 0 && c === 0);
+                        if (isEdge) {
+                            const tables = Array.from(document.querySelectorAll('.app-view.active-view table'));
+                            const ti = tables.indexOf(table);
+                            const next = dCol > 0 ? tables[ti + 1] : tables[ti - 1];
+                            if (next) {
+                                const cells = Array.from(next.querySelectorAll('td, th')).filter(isEditable);
+                                if (cells.length > 0) { pickCell(dCol > 0 ? cells[0] : cells[cells.length - 1]); return; }
+                            }
+                        }
+                        return; // don't skip non-editable cells horizontally within a table
+                    }
                 }
             });
         });
