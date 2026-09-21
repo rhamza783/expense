@@ -1089,8 +1089,9 @@
         }
 
         // Arrow key navigation between editable table cells
-        // Throttled + repeat-guarded so fast keypresses never queue up and
-        // keep jumping cells after the keys are released.
+        // Excel-like, strictly boundary-aware: movement never wraps and never
+        // crosses into unrelated tables. Throttled + repeat-guarded so fast
+        // keypresses never queue up and keep jumping after keys are released.
         let lastArrowNav = 0;
         let arrowNavPending = false;
         document.addEventListener('keydown', (e) => {
@@ -1119,11 +1120,13 @@
                 const active = document.activeElement;
                 if (!active || !active.isContentEditable) return;
                 const startCell = active.closest('td, th');
-                if (!startCell || !startCell.closest('table')) return;
-                const [dRow, dCol] = arrows[e.key];
+                if (!startCell) return;
                 const table = startCell.closest('table');
+                if (!table) return;
+                const [dRow, dCol] = arrows[e.key];
                 const rows = Array.from(table.rows);
-                let r = startCell.parentElement.rowIndex, c = startCell.cellIndex;
+                let r = startCell.parentElement.rowIndex;
+                let c = startCell.cellIndex;
                 const pickCell = (cand) => {
                     cand.focus();
                     const range = document.createRange();
@@ -1134,32 +1137,30 @@
                     sel.addRange(range);
                 };
                 const isEditable = (t) => t && t.isContentEditable && !t.classList.contains('calc-locked') && !t.querySelector('input, select');
-                while (true) {
-                    if (dRow !== 0) r += dRow; else c += dCol;
-                    if (r < 0 || r >= rows.length) {
-                        // Top edge: stay on the top cell (no wrap to previous table)
-                        if (r < 0) return;
-                        // Bottom edge: jump to the first editable cell of the next table
-                        const tables = Array.from(document.querySelectorAll('.app-view.active-view table'));
-                        const ti = tables.indexOf(table);
-                        const next = tables[ti + 1];
-                        if (!next) return;
-                        const cells = Array.from(next.querySelectorAll('td, th')).filter(isEditable);
-                        if (cells.length === 0) return;
-                        // Try to land on the same column position in the next table
-                        const sameCol = cells.find(t => t.cellIndex === c) || cells.find(t => Math.abs(t.cellIndex - c) <= 1);
-                        pickCell(sameCol || cells[0]);
-                        return;
-                    }
+
+                if (dRow === 0) {
+                    // HORIZONTAL: adjacent sibling cell in the same row only.
+                    // One step, no skipping, no table crossing, no wrapping.
                     const rowCells = rows[r].cells;
-                    if (c < 0 || c >= rowCells.length) return; // stay in the same row/table horizontally
-                    const target = rowCells[c];
-                    if (isEditable(target)) {
-                        pickCell(target);
-                        return;
-                    }
-                    if (dRow === 0) return; // don't skip non-editable cells horizontally
+                    const nc = c + dCol;
+                    if (nc < 0 || nc >= rowCells.length) return;      // boundary: stay put
+                    if (isEditable(rowCells[nc])) pickCell(rowCells[nc]); // else: stay put
+                    return;
                 }
+
+                // VERTICAL: traverse only within this table and this column.
+                // Scan past non-editable cells, but hard-stop at table edges.
+                let nr = r + dRow;
+                while (nr >= 0 && nr < rows.length) {
+                    const rowCells = rows[nr].cells;
+                    // Clamp to a column that exists in this row (colspan rows vary)
+                    const cc = Math.min(c, rowCells.length - 1);
+                    if (cc < 0) { nr += dRow; continue; }
+                    const cand = rowCells[cc];
+                    if (isEditable(cand)) { pickCell(cand); return; }
+                    nr += dRow;
+                }
+                // Boundary reached (top or bottom): keep focus where it is. Never wrap.
             });
         });
 
